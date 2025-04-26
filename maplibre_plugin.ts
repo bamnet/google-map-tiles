@@ -1,6 +1,5 @@
-import { GoogleMapTiles, MapType, SessionOptions } from "./tiles.ts";
-import { AttributionControl, LogoControl } from "maplibre-gl";
-import type { LngLatBounds, Map } from "maplibre-gl";
+import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
+import { AttributionControl, LogoControl, type LngLatBounds, type Map } from "maplibre-gl";
 
 // Default options
 const defaultSessionOptions: SessionOptions = {
