@@ -107,11 +107,14 @@ export class GoogleMapTiles {
       body: JSON.stringify(request),
     });
 
+    const data = await response.json();
     if (!response.ok) {
-      throw new Error(`Error creating session: ${response.statusText}`);
+      // Try to get the detailed error message from the Google Maps API error format
+      const errorMessage = data.error?.message || response.statusText;
+      throw new Error(`Error creating session: ${errorMessage}`);
     }
 
-    this.session = await response.json() as SessionResponse;
+    this.session = data as SessionResponse;
     return this.session;
   }
 

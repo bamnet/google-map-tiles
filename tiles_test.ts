@@ -61,7 +61,19 @@ Deno.test("GoogleMapTiles - createSession", async () => {
 
 Deno.test("GoogleMapTiles - createSession failure", async () => {
   const ctx = createTestContext();
-  ctx.mockFetch({}, false);
+  ctx.mockFetch({
+    error: {
+      code: 403,
+      message: "Requests from referer https://test/ are blocked.",
+      errors: [
+        {
+          message: "Requests from referer https://test/ are blocked.",
+          domain: "global",
+          reason: "forbidden",
+        },
+      ],
+    },
+  }, false);
 
   try {
     const apiKey = "test-api-key";
@@ -77,7 +89,7 @@ Deno.test("GoogleMapTiles - createSession failure", async () => {
         await googleMapTiles.createSession(sessionRequest);
       },
       Error,
-      "Error creating session",
+      "Error creating session: Requests from referer https://test/ are blocked.",
     );
   } finally {
     ctx.cleanup();
