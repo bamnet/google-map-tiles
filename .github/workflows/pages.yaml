@@ -40,7 +40,7 @@ jobs:
 
       - name: Build
         working-directory: examples
-        run: npm run build
+        run: npm run build -- --base=/google-map-tiles/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
