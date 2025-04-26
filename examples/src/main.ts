@@ -1,7 +1,11 @@
 import "./style.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Map } from "maplibre-gl";
-import { addGoogleMapTiles, GoogleMapTilesSource, MapType } from "../../mod.ts";
+import {
+  addGoogleMapTiles,
+  type GoogleMapTilesSource,
+  type MapType,
+} from "../../mod.ts";
 
 // Initialize map without tiles initially
 const map = new Map({

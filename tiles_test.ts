@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from "@std/assert";
-import { GoogleMapTiles, MapType, SessionOptions } from "./tiles.ts";
+import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
 
 // Mock responses
 const mockSessionResponse = {

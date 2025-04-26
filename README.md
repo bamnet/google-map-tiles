@@ -1,6 +1,9 @@
 # 🗺️ Google Map Tiles for MapLibre GL
 
-A TypeScript library that enables the use of [Google Map Tiles](https://developers.google.com/maps/documentation/tile) API in MapLibre GL JS applications. It provides session handling, attribution, and various map configurations.
+A TypeScript library that enables the use of
+[Google Map Tiles](https://developers.google.com/maps/documentation/tile) API in
+MapLibre GL JS applications. It provides session handling, attribution, and
+various map configurations.
 
 [![Build](https://github.com/bamnet/google-map-tiles/actions/workflows/deno.yaml/badge.svg)](https://github.com/bamnet/google-map-tiles/actions/workflows/deno.yaml)
 [![JSR](https://jsr.io/badges/@bamnet/google-map-tiles)](https://jsr.io/@bamnet/google-map-tiles)
@@ -47,19 +50,20 @@ await addGoogleMapTiles("YOUR_API_KEY", map, {
 
 ## ⚙️ Configuration Options
 
-The library supports various configuration options through the `SessionOptions` interface:
+The library supports various configuration options through the `SessionOptions`
+interface:
 
 ```typescript
 interface SessionOptions {
   mapType: "roadmap" | "satellite" | "terrain" | "streetview";
-  language: string;     // e.g., "en-US", "fr", "de"
-  region: string;       // e.g., "us", "uk", "jp"
+  language: string; // e.g., "en-US", "fr", "de"
+  region: string; // e.g., "us", "uk", "jp"
   imageFormat?: string; // Optional image format
-  scale?: string;       // Optional scale factor
-  highDpi?: boolean;    // Optional high DPI support
+  scale?: string; // Optional scale factor
+  highDpi?: boolean; // Optional high DPI support
   layerTypes?: string[]; // Optional layer types
-  styles?: unknown[];   // Optional custom styles
-  overlay?: boolean;    // Optional overlay mode
+  styles?: unknown[]; // Optional custom styles
+  overlay?: boolean; // Optional overlay mode
   apiOptions?: string[]; // Optional API options
 }
 ```
@@ -108,7 +112,9 @@ const tileUrl = client.tileUrl(15, 6294, 13288);
 
 ## 💡 Example
 
-Check out the `examples` directory for a complete demo application showing how to:
+Check out the `examples` directory for a complete demo application showing how
+to:
+
 - 🗺️ Initialize a map with Google tiles
 - 🔄 Switch between map types
 - 🌐 Configure language and region settings
