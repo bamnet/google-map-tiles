@@ -25,7 +25,10 @@ various map configurations.
 deno add @bamnet/google-map-tiles
 
 # Using NPM
-npm install @bamnet/google-map-tiles
+npx jsr add @bamnet/google-map-tiles
+
+# Using Yarn
+yarn add jsr:@bamnet/google-map-tiles
 ```
 
 ## 🚀 Quick Start
