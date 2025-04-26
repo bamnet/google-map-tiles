@@ -6,4 +6,8 @@ export type {
   ZoomRectangle,
 } from "./tiles.ts";
 
-export { GoogleMapTilesSource } from "./maplibre_plugin.ts";
+export {
+  AddGoogleLogo,
+  AddGoogleMapTiles,
+  GoogleMapTilesSource,
+} from "./maplibre_plugin.ts";
