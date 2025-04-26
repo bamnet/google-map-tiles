@@ -5,7 +5,7 @@ import {
   addGoogleMapTiles,
   type GoogleMapTilesSource,
   type MapType,
-} from "../../mod.ts";
+} from "@bamnet/google-map-tiles";
 
 // Initialize map without tiles initially
 const map = new Map({
