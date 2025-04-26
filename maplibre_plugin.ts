@@ -1,5 +1,10 @@
 import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
-import { AttributionControl, LogoControl, type LngLatBounds, type Map } from "maplibre-gl";
+import {
+  AttributionControl,
+  type LngLatBounds,
+  LogoControl,
+  type Map,
+} from "maplibre-gl";
 
 // Default options
 const defaultSessionOptions: SessionOptions = {
@@ -27,7 +32,7 @@ export class GoogleMapTilesSource {
   static async create(
     apiKey: string,
     options: SessionOptions = defaultSessionOptions,
-  ) {
+  ): Promise<GoogleMapTilesSource> {
     const tiles = new GoogleMapTilesSource(apiKey);
     await tiles.client.createSession(options);
     return tiles;
@@ -39,7 +44,7 @@ export class GoogleMapTilesSource {
   }
 
   /** @inheritDoc GoogleMapTiles.tileJSONUrl */
-  get tileUrl() {
+  get tileUrl(): string {
     return this.client.tileJSONUrl();
   }
 
