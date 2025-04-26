@@ -1,10 +1,17 @@
 import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
-import {
-  AttributionControl,
-  type LngLatBounds,
-  LogoControl,
-  type Map,
-} from "maplibre-gl";
+import type { IControl, LngLatBounds, Map } from "maplibre-gl";
+
+interface IAttributionControl extends IControl {
+  options: {
+    customAttribution?: string | string[];
+  };
+  _updateAttributions(): void;
+}
+
+interface ILogoControl extends IControl {
+  _container: HTMLImageElement;
+  _map: Map;
+}
 
 // Default options
 const defaultSessionOptions: SessionOptions = {
@@ -12,6 +19,10 @@ const defaultSessionOptions: SessionOptions = {
   language: "en-US",
   region: "us",
 };
+
+type AttributionControlConstructor = new (
+  options: { compact: boolean },
+) => IAttributionControl;
 
 /**
  * A MapLibre source for Google Maps tiles that handles attribution and session management.
@@ -24,7 +35,55 @@ const defaultSessionOptions: SessionOptions = {
  */
 export class GoogleMapTilesSource {
   readonly client: GoogleMapTiles;
-  readonly attributionControl: AttributionControl;
+  readonly attributionControl: IAttributionControl;
+  private static attributionControlClass: AttributionControlConstructor | null =
+    null;
+
+  protected static getOrCreateAttributionControl(
+    map: Map,
+    control?: IAttributionControl,
+  ): IAttributionControl {
+    if (control) {
+      // Cache constructor from provided control if we haven't already
+      if (!this.attributionControlClass) {
+        this.attributionControlClass = control
+          .constructor as AttributionControlConstructor;
+      }
+      return control;
+    }
+
+    // Use cached constructor if available
+    if (this.attributionControlClass) {
+      return new this.attributionControlClass({ compact: false });
+    }
+
+    // Try to find one on the map
+    const existingControl = map._controls.find((
+      control,
+    ): control is IAttributionControl => isAttributionControl(control));
+    if (!existingControl) {
+      throw new Error(
+        "No AttributionControl found on map. Please add one or provide it as a parameter.",
+      );
+    }
+
+    // Cache the constructor for future use
+    this.attributionControlClass = existingControl
+      .constructor as AttributionControlConstructor;
+    return new this.attributionControlClass({ compact: false });
+  }
+
+  static async createWithMap(
+    apiKey: string,
+    map: Map,
+    options: SessionOptions = defaultSessionOptions,
+    attributionControl?: IAttributionControl,
+  ): Promise<GoogleMapTilesSource> {
+    const control = this.getOrCreateAttributionControl(map, attributionControl);
+    const tiles = await this.create(apiKey, options, control);
+    tiles.addToMap(map);
+    return tiles;
+  }
 
   /**
    * Creates a new GoogleMapTilesSource with an active session.
@@ -32,15 +91,19 @@ export class GoogleMapTilesSource {
   static async create(
     apiKey: string,
     options: SessionOptions = defaultSessionOptions,
+    attributionControl: IAttributionControl,
   ): Promise<GoogleMapTilesSource> {
-    const tiles = new GoogleMapTilesSource(apiKey);
+    const tiles = new GoogleMapTilesSource(apiKey, attributionControl);
     await tiles.client.createSession(options);
     return tiles;
   }
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, attributionControl: IAttributionControl) {
+    if (!attributionControl) {
+      throw new Error("Attribution control is required");
+    }
     this.client = new GoogleMapTiles(apiKey);
-    this.attributionControl = new AttributionControl({ compact: false });
+    this.attributionControl = attributionControl;
   }
 
   /** @inheritDoc GoogleMapTiles.tileJSONUrl */
@@ -93,7 +156,7 @@ export class GoogleMapTilesSource {
   private setupAttribution(map: Map) {
     map._controls.forEach((control) => {
       if (
-        control instanceof AttributionControl &&
+        isAttributionControl(control) &&
         isDefaultAttributionControl(control)
       ) {
         map.removeControl(control);
@@ -134,10 +197,11 @@ export class GoogleMapTilesSource {
 /**
  * Helper function to add Google Maps tiles to a MapLibre map.
  */
-export async function addGoogleMapTiles(
+export function addGoogleMapTiles(
   apiKey: string,
   map: Map,
-  options?: SessionOptions,
+  options: SessionOptions = defaultSessionOptions,
+  attributionControl?: IAttributionControl,
 ): Promise<GoogleMapTilesSource> {
   if (!apiKey) {
     throw new Error("Google Maps API key is required");
@@ -146,9 +210,12 @@ export async function addGoogleMapTiles(
     throw new Error("MapLibre map instance is required");
   }
 
-  const googleMapTiles = await GoogleMapTilesSource.create(apiKey, options);
-  googleMapTiles.addToMap(map);
-  return googleMapTiles;
+  return GoogleMapTilesSource.createWithMap(
+    apiKey,
+    map,
+    options,
+    attributionControl,
+  );
 }
 
 /**
@@ -159,10 +226,11 @@ export function addGoogleLogo(map: Map) {
   map.addControl(logo, "bottom-left");
 }
 
-class GoogleLogoControl extends LogoControl {
-  declare _container: HTMLImageElement;
+class GoogleLogoControl implements ILogoControl {
+  _container!: HTMLImageElement;
+  _map!: Map;
 
-  override onAdd(map: Map): HTMLElement {
+  onAdd(map: Map): HTMLElement {
     this._map = map;
     this._container = document.createElement("img");
     this._container.style.padding = "0px 8px";
@@ -171,9 +239,20 @@ class GoogleLogoControl extends LogoControl {
     this._container.alt = "Google Maps";
     return this._container;
   }
+
+  onRemove(): void {
+    this._container.remove();
+  }
 }
 
-function isDefaultAttributionControl(control: AttributionControl) {
+// Type guard for IAttributionControl
+function isAttributionControl(
+  control: IControl,
+): control is IAttributionControl {
+  return "options" in control && "_updateAttributions" in control;
+}
+
+function isDefaultAttributionControl(control: IAttributionControl) {
   const defaultAttribution =
     '<a href="https://maplibre.org/" target="_blank">MapLibre</a>';
   return control.options.customAttribution === defaultAttribution;
