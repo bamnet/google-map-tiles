@@ -5,6 +5,8 @@ A TypeScript library that enables the use of
 MapLibre GL JS applications. It provides session handling, attribution, and
 various map configurations.
 
+Demo @ https://bamnet.github.io/google-map-tiles/
+
 [![Build](https://github.com/bamnet/google-map-tiles/actions/workflows/deno.yaml/badge.svg)](https://github.com/bamnet/google-map-tiles/actions/workflows/deno.yaml)
 [![JSR](https://jsr.io/badges/@bamnet/google-map-tiles)](https://jsr.io/@bamnet/google-map-tiles)
 
