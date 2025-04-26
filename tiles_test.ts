@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from "@std/assert";
-import { GoogleMapTiles, MapType, SessionRequest } from "./tiles.ts";
+import { GoogleMapTiles, MapType, SessionOptions } from "./tiles.ts";
 
 // Mock responses
 const mockSessionResponse = {
@@ -46,7 +46,7 @@ Deno.test("GoogleMapTiles - createSession", async () => {
   try {
     const apiKey = "test-api-key";
     const googleMapTiles = new GoogleMapTiles(apiKey);
-    const sessionRequest: SessionRequest = {
+    const sessionRequest: SessionOptions = {
       mapType: MapType.Satellite,
       language: "en-US",
       region: "us",
@@ -66,7 +66,7 @@ Deno.test("GoogleMapTiles - createSession failure", async () => {
   try {
     const apiKey = "test-api-key";
     const googleMapTiles = new GoogleMapTiles(apiKey);
-    const sessionRequest: SessionRequest = {
+    const sessionRequest: SessionOptions = {
       mapType: MapType.Satellite,
       language: "en-US",
       region: "us",
@@ -91,7 +91,7 @@ Deno.test("GoogleMapTiles - getViewport", async () => {
   try {
     const apiKey = "test-api-key";
     const googleMapTiles = new GoogleMapTiles(apiKey);
-    const sessionRequest: SessionRequest = {
+    const sessionRequest: SessionOptions = {
       mapType: MapType.Satellite,
       language: "en-US",
       region: "us",
@@ -114,7 +114,7 @@ Deno.test("GoogleMapTiles - getViewport failure", async () => {
   try {
     const apiKey = "test-api-key";
     const googleMapTiles = new GoogleMapTiles(apiKey);
-    const sessionRequest: SessionRequest = {
+    const sessionRequest: SessionOptions = {
       mapType: MapType.Satellite,
       language: "en-US",
       region: "us",
@@ -135,6 +135,31 @@ Deno.test("GoogleMapTiles - getViewport failure", async () => {
   }
 });
 
+Deno.test("GoogleMapTiles - tileJSONUrl", async () => {
+  const ctx = createTestContext();
+  ctx.mockFetch(mockSessionResponse);
+
+  try {
+    const apiKey = "test-api-key";
+    const googleMapTiles = new GoogleMapTiles(apiKey);
+    const sessionRequest: SessionOptions = {
+      mapType: MapType.Satellite,
+      language: "en-US",
+      region: "us",
+    };
+
+    await googleMapTiles.createSession(sessionRequest);
+
+    const tileJSONUrl = googleMapTiles.tileJSONUrl();
+
+    assertEquals(tileJSONUrl.includes("key=test-api-key"), true);
+    assertEquals(tileJSONUrl.includes("session=mock-session-token"), true);
+    assertEquals(tileJSONUrl.includes("/v1/2dtiles/{z}/{x}/{y}"), true);
+  } finally {
+    ctx.cleanup();
+  }
+});
+
 Deno.test("GoogleMapTiles - tileUrl", async () => {
   const ctx = createTestContext();
   ctx.mockFetch(mockSessionResponse);
@@ -142,7 +167,7 @@ Deno.test("GoogleMapTiles - tileUrl", async () => {
   try {
     const apiKey = "test-api-key";
     const googleMapTiles = new GoogleMapTiles(apiKey);
-    const sessionRequest: SessionRequest = {
+    const sessionRequest: SessionOptions = {
       mapType: MapType.Satellite,
       language: "en-US",
       region: "us",

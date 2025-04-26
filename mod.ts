@@ -1,8 +1,9 @@
-export { GoogleMapTiles } from "./tiles.ts";
+export { GoogleMapTiles, MapType } from "./tiles.ts";
 export type {
-  SessionRequest,
+  SessionOptions,
   SessionResponse,
   ViewportResponse,
   ZoomRectangle,
 } from "./tiles.ts";
-export { MapType } from "./tiles.ts";
+
+export { GoogleMapTilesSource } from "./maplibre_plugin.ts";

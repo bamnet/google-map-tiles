@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://tile.googleapis.com/v1";
+export const API_BASE_URL = "https://tile.googleapis.com";
 
 export interface ZoomRectangle {
   maxZoom: number;
@@ -20,7 +20,7 @@ export enum MapType {
   Streetview = "streetview",
 }
 
-export interface SessionRequest {
+export interface SessionOptions {
   mapType: MapType | `${MapType}`;
   language: string;
   region: string;
@@ -46,8 +46,8 @@ export interface SessionResponse {
  * Manages sessions and provides methods to fetch map tiles and viewport information.
  */
 export class GoogleMapTiles {
-  private apiKey: string;
-  private session: SessionResponse | null = null;
+  apiKey: string;
+  session: SessionResponse | null = null;
 
   /**
    * Creates a new GoogleMapTiles client.
@@ -63,8 +63,8 @@ export class GoogleMapTiles {
    * @returns Session details including token and expiry
    * @throws {Error} If the session creation fails
    */
-  async createSession(request: SessionRequest): Promise<SessionResponse> {
-    const url = `${API_BASE_URL}/createSession?key=${this.apiKey}`;
+  async createSession(request: SessionOptions): Promise<SessionResponse> {
+    const url = `${API_BASE_URL}/v1/createSession?key=${this.apiKey}`;
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -103,7 +103,7 @@ export class GoogleMapTiles {
     }
 
     const url =
-      `${API_BASE_URL}/viewport?session=${this.session.session}&key=${this.apiKey}&zoom=${zoom}&north=${north}&south=${south}&east=${east}&west=${west}`;
+      `${API_BASE_URL}/tile/v1/viewport?session=${this.session.session}&key=${this.apiKey}&zoom=${zoom}&north=${north}&south=${south}&east=${east}&west=${west}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -111,6 +111,17 @@ export class GoogleMapTiles {
     }
 
     return await response.json() as ViewportResponse;
+  }
+
+  /**
+   * Generates a TileJSON URL for fetching tiles.
+   */
+  tileJSONUrl(): string {
+    if (!this.session) {
+      throw new Error("Session not created. Call createSession() first.");
+    }
+
+    return `${API_BASE_URL}/v1/2dtiles/{z}/{x}/{y}?session=${this.session.session}&key=${this.apiKey}`;
   }
 
   /**
@@ -127,6 +138,6 @@ export class GoogleMapTiles {
       throw new Error("Session not created. Call createSession() first.");
     }
 
-    return `${API_BASE_URL}/2dtiles/${z}/${x}/${y}?session=${this.session.session}&key=${this.apiKey}&orientation=${orientation}`;
+    return `${API_BASE_URL}/v1/2dtiles/${z}/${x}/${y}?session=${this.session.session}&key=${this.apiKey}&orientation=${orientation}`;
   }
 }
