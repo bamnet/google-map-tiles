@@ -1,5 +1,9 @@
 export const API_BASE_URL = "https://tile.googleapis.com";
 
+/**
+ * Defines a rectangular region and the maximum zoom level at which
+ * data is available in that region.
+ */
 export interface ZoomRectangle {
   maxZoom: number;
   north: number;
@@ -8,31 +12,61 @@ export interface ZoomRectangle {
   west: number;
 }
 
+/**
+ * Contains copyright information and maximum zoom level data for a given viewport.
+ */
 export interface ViewportResponse {
   copyright: string;
   maxZoomRects: Array<ZoomRectangle>;
 }
 
+/**
+ * Represents the available map types for requesting tiles.
+ */
 export enum MapType {
+  /** Standard Google Maps roadmap tiles. */
   Roadmap = "roadmap",
+  /** Satellite imagery tiles. */
   Satellite = "satellite",
+  /** Terrain tiles with relief information. */
   Terrain = "terrain",
+  /** Street View panorama tiles (requires additional parameters not fully supported by this basic type). */
   Streetview = "streetview",
 }
 
+/**
+ * Configuration options used when creating a new Tile API session.
+ */
 export interface SessionOptions {
+  /** The type of map tiles to request (e.g., roadmap, satellite). */
   mapType: MapType | `${MapType}`;
+  /** The language to use for labels on the map tiles (e.g., "en-US"). */
   language: string;
+  /** The region code (CLDR identifier) to tailor map details (e.g., "US"). */
   region: string;
+  /**
+   * The image format for the tiles (e.g., "png", "jpeg").
+   */
   imageFormat?: string;
+  /**
+   * The scale factor for the tiles. Use "scaleFactor2x" for high-DPI devices.
+   * @default "scaleFactor1x"
+   */
   scale?: string;
   highDpi?: boolean;
   layerTypes?: Array<string>;
   styles?: Array<unknown>;
   overlay?: boolean;
+  /**
+   * An array of values specifying additional options to apply.
+   */
   apiOptions?: Array<string>;
 }
 
+/**
+ * Contains the details of an active map session, returned by `createSession`.
+ * This information is needed for subsequent tile and viewport requests.
+ */
 export interface SessionResponse {
   session: string;
   expiry: string;
