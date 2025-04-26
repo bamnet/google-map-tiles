@@ -65,6 +65,12 @@ export class GoogleMapTilesSource {
       map.removeSource("google-map-tiles");
     }
     map.removeControl(this.attributionControl);
+
+    for (const control of map._controls) {
+      if (control instanceof GoogleLogoControl) {
+        map.removeControl(control);
+      }
+    }
   }
 
   private addSourceAndLayer(map: Map) {
@@ -74,7 +80,7 @@ export class GoogleMapTilesSource {
       "tileSize": 256,
     });
     map.addLayer({
-      "id": "map",
+      "id": "google-map-tiles",
       "source": "google-map-tiles",
       "type": "raster",
     });
@@ -144,7 +150,7 @@ export async function addGoogleMapTiles(
 /**
  * Adds the Google logo to the map.
  */
-function addGoogleLogo(map: Map) {
+export function addGoogleLogo(map: Map) {
   const logo = new GoogleLogoControl();
   map.addControl(logo, "bottom-left");
 }

@@ -7,7 +7,7 @@ export type {
 } from "./tiles.ts";
 
 export {
-  AddGoogleLogo,
-  AddGoogleMapTiles,
+  addGoogleLogo,
+  addGoogleMapTiles,
   GoogleMapTilesSource,
 } from "./maplibre_plugin.ts";
