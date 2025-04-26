@@ -23,6 +23,9 @@ body {
 #controls label {
   font-size: 14px;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 #controls input,
@@ -36,11 +39,19 @@ body {
 
 /* Make API key input wider to accommodate longer keys */
 #controls #apiKey {
-  width: 400px;
+  width: 300px;
 }
 
 #controls input[type="text"] {
   font-family: monospace;
+}
+
+#controls select {
+  padding-right: 24px;
+}
+
+#controls select option {
+  font-size: 14px;
 }
 
 html, body {
