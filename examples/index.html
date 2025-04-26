@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Map Tiles + MapLibre Demo</title>
+  </head>
+  <body>
+    <div id="controls">
+      <div class="control-group">
+        <label for="apiKey">API Key:</label>
+        <input type="text" id="apiKey" placeholder="Enter Google Maps API Key">
+      </div>
+      <div class="control-group">
+        <label for="mapType">Map Type:</label>
+        <select id="mapType">
+          <option value="roadmap">Roadmap</option>
+          <option value="satellite">Satellite</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="region">Region:</label>
+        <input type="text" id="region" placeholder="e.g., us" value="us">
+      </div>
+      <div class="control-group">
+        <label for="language">Language:</label>
+        <input
+          type="text"
+          id="language"
+          placeholder="e.g., en-US"
+          value="en-US"
+        >
+      </div>
+    </div>
+    <div id="map"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

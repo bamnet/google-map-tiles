@@ -1,0 +1,52 @@
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#controls {
+  padding: 12px;
+  background: #fff;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#controls .control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#controls label {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+#controls input,
+#controls select {
+  width: 150px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Make API key input wider to accommodate longer keys */
+#controls #apiKey {
+  width: 400px;
+}
+
+#controls input[type="text"] {
+  font-family: monospace;
+}
+
+html, body {
+  height: 100%;
+}
+
+#map {
+  flex: 1;
+}
