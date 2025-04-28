@@ -1,10 +1,6 @@
 import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
-import {
-  AttributionControl,
-  type LngLatBounds,
-  LogoControl,
-  type Map,
-} from "maplibre-gl";
+import { AttributionControl, type LngLatBounds, type Map } from "maplibre-gl";
+import { addGoogleLogo, GoogleLogoControl } from "./logo_control.ts";
 
 // Default options
 const defaultSessionOptions: SessionOptions = {
@@ -149,28 +145,6 @@ export async function addGoogleMapTiles(
   const googleMapTiles = await GoogleMapTilesSource.create(apiKey, options);
   googleMapTiles.addToMap(map);
   return googleMapTiles;
-}
-
-/**
- * Adds the Google logo to the map.
- */
-export function addGoogleLogo(map: Map) {
-  const logo = new GoogleLogoControl();
-  map.addControl(logo, "bottom-left");
-}
-
-class GoogleLogoControl extends LogoControl {
-  declare _container: HTMLImageElement;
-
-  override onAdd(map: Map): HTMLElement {
-    this._map = map;
-    this._container = document.createElement("img");
-    this._container.style.padding = "0px 8px";
-    this._container.src =
-      "https://developers.google.com/static/maps/documentation/images/google_on_white.png";
-    this._container.alt = "Google Maps";
-    return this._container;
-  }
 }
 
 function isDefaultAttributionControl(control: AttributionControl) {
