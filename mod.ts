@@ -1,13 +1,13 @@
-export { GoogleMapTiles, MapType } from "./tiles.ts";
+export { GoogleMapTiles, MapType } from "./src/tiles.ts";
 export type {
   SessionOptions,
   SessionResponse,
   ViewportResponse,
   ZoomRectangle,
-} from "./tiles.ts";
+} from "./src/tiles.ts";
 
 export {
   addGoogleLogo,
   addGoogleMapTiles,
   GoogleMapTilesSource,
-} from "./maplibre_plugin.ts";
+} from "./src/maplibre_plugin.ts";
