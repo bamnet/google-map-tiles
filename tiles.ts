@@ -35,6 +35,18 @@ export enum MapType {
 }
 
 /**
+ * Represents the available layer types for requesting tiles.
+ */
+export enum LayerType {
+  /** Road names and outlines. Required when using Terrain MapType, optional for Satellite. */
+  Roadmap = "layerRoadmap",
+  /** Outline areas where Street View is available. */
+  StreetView = "layerStreetview",
+  /** Display current traffic. */
+  Traffic = "layerTraffic",
+}
+
+/**
  * Configuration options used when creating a new Tile API session.
  */
 export interface SessionOptions {
@@ -54,7 +66,7 @@ export interface SessionOptions {
    */
   scale?: string;
   highDpi?: boolean;
-  layerTypes?: Array<string>;
+  layerTypes?: Array<LayerType | `${LayerType}`>;
   styles?: Array<unknown>;
   overlay?: boolean;
   /**
