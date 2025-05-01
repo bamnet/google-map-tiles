@@ -38,6 +38,10 @@ jobs:
         working-directory: examples
         run: npm install
 
+      - name: Update our depdendency
+        working-directory: examples
+        run: npm update @bamnet/google-map-tiles 
+
       - name: Build
         working-directory: examples
         run: npm run build -- --base=/google-map-tiles/
