@@ -6,6 +6,7 @@ import {
   type GoogleMapTilesSource,
   type LayerType,
   type MapType,
+  type SessionOptions,
 } from "@bamnet/google-map-tiles";
 
 // Initialize map without tiles initially
@@ -50,7 +51,7 @@ async function updateMap() {
     }
 
     // Add new tiles with current options
-    const options = {
+    const options: SessionOptions = {
       mapType: mapTypeSelect.value as MapType,
       region: regionInput.value,
       language: languageInput.value,
