@@ -5,6 +5,7 @@ import {
   addGoogleMapTiles,
   type GoogleMapTilesSource,
   type MapType,
+  type LayerType,
 } from "@bamnet/google-map-tiles";
 
 // Initialize map without tiles initially
@@ -19,6 +20,7 @@ let currentTiles: GoogleMapTilesSource | null = null;
 // Get DOM elements
 const apiKeyInput = document.getElementById("apiKey") as HTMLInputElement;
 const mapTypeSelect = document.getElementById("mapType") as HTMLSelectElement;
+const layerTypeSelect = document.getElementById("layerType") as HTMLSelectElement;
 const regionInput = document.getElementById("region") as HTMLInputElement;
 const languageInput = document.getElementById("language") as HTMLInputElement;
 
@@ -31,6 +33,7 @@ if (import.meta.env.VITE_GOOGLE_MAPS_API_KEY) {
 // Add event listeners
 apiKeyInput.addEventListener("change", updateMap);
 mapTypeSelect.addEventListener("change", updateMap);
+layerTypeSelect.addEventListener("change", updateMap);
 regionInput.addEventListener("change", updateMap);
 languageInput.addEventListener("change", updateMap);
 
@@ -45,11 +48,19 @@ async function updateMap() {
     }
 
     // Add new tiles with current options
-    currentTiles = await addGoogleMapTiles(apiKey, map, {
+    const options = {
       mapType: mapTypeSelect.value as MapType,
       region: regionInput.value,
       language: languageInput.value,
-    });
+    };
+
+    // Add layer type if selected
+    const layerType = layerTypeSelect.value;
+    if (layerType) {
+      options.layerTypes = [layerType as LayerType];
+    }
+
+    currentTiles = await addGoogleMapTiles(apiKey, map, options);
   } catch (error) {
     console.error("Error updating map:", error);
   }
