@@ -1,5 +1,6 @@
 export { GoogleMapTiles, MapType } from "./src/tiles.ts";
 export type {
+  LayerType,
   SessionOptions,
   SessionResponse,
   ViewportResponse,
