@@ -4,8 +4,8 @@ import { Map } from "maplibre-gl";
 import {
   addGoogleMapTiles,
   type GoogleMapTilesSource,
-  type MapType,
   type LayerType,
+  type MapType,
 } from "@bamnet/google-map-tiles";
 
 // Initialize map without tiles initially
@@ -20,7 +20,9 @@ let currentTiles: GoogleMapTilesSource | null = null;
 // Get DOM elements
 const apiKeyInput = document.getElementById("apiKey") as HTMLInputElement;
 const mapTypeSelect = document.getElementById("mapType") as HTMLSelectElement;
-const layerTypeSelect = document.getElementById("layerType") as HTMLSelectElement;
+const layerTypeSelect = document.getElementById(
+  "layerType",
+) as HTMLSelectElement;
 const regionInput = document.getElementById("region") as HTMLInputElement;
 const languageInput = document.getElementById("language") as HTMLInputElement;
 
