@@ -40,7 +40,7 @@ jobs:
 
       - name: Update our depdendency
         working-directory: examples
-        run: npm update @bamnet/google-map-tiles 
+        run: npm update @bamnet/google-map-tiles
 
       - name: Build
         working-directory: examples
