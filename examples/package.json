@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "typescript": "~5.7.2",
-    "vite": "^6.3.1"
+    "vite": "^6.3.4"
   },
   "dependencies": {
     "@bamnet/google-map-tiles": "npm:@jsr/bamnet__google-map-tiles@0",
