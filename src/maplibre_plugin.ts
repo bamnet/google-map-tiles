@@ -1,5 +1,6 @@
 import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
-import { AttributionControl, type LngLatBounds, type Map } from "maplibre-gl";
+import type { LngLatBounds, Map, Source } from "maplibre-gl";
+import { AttributionControl } from "maplibre-gl";
 import { addGoogleLogo, GoogleLogoControl } from "./logo_control.ts";
 
 // Default options
@@ -9,18 +10,22 @@ const defaultSessionOptions: SessionOptions = {
   region: "us",
 };
 
+const LAYER_NAME = "google-map-tiles";
+const SOURCE_NAME = "google-map-tiles";
+
 /**
- * A MapLibre source for Google Maps tiles that handles attribution and session management.
+ * A MapLibre plugin for Google Maps tiles to handle attribution and session management.
  *
  * @example
  * ```ts
- * const source = await GoogleMapTilesSource.create("YOUR_API_KEY");
+ * const source = await GoogleMapTilesSourceManager.create("YOUR_API_KEY");
  * source.addToMap(map);
  * ```
  */
-export class GoogleMapTilesSource {
+export class GoogleMapTilesSourceManager {
   readonly client: GoogleMapTiles;
-  readonly attributionControl: AttributionControl;
+
+  private source?: Source;
 
   /**
    * Creates a new GoogleMapTilesSource with an active session.
@@ -28,15 +33,14 @@ export class GoogleMapTilesSource {
   static async create(
     apiKey: string,
     options: SessionOptions = defaultSessionOptions,
-  ): Promise<GoogleMapTilesSource> {
-    const tiles = new GoogleMapTilesSource(apiKey);
+  ): Promise<GoogleMapTilesSourceManager> {
+    const tiles = new GoogleMapTilesSourceManager(apiKey);
     await tiles.client.createSession(options);
     return tiles;
   }
 
   constructor(apiKey: string) {
     this.client = new GoogleMapTiles(apiKey);
-    this.attributionControl = new AttributionControl({ compact: false });
   }
 
   /** @inheritDoc GoogleMapTiles.tileJSONUrl */
@@ -58,13 +62,12 @@ export class GoogleMapTilesSource {
    * Removes the Google Maps tiles and controls from the map.
    */
   removeFromMap(map: Map): void {
-    if (map.getLayer("google-map-tiles")) {
-      map.removeLayer("google-map-tiles");
+    if (map.getLayer(LAYER_NAME)) {
+      map.removeLayer(LAYER_NAME);
     }
-    if (map.getSource("google-map-tiles")) {
-      map.removeSource("google-map-tiles");
+    if (map.getSource(SOURCE_NAME)) {
+      map.removeSource(SOURCE_NAME);
     }
-    map.removeControl(this.attributionControl);
 
     for (const control of map._controls) {
       if (control instanceof GoogleLogoControl) {
@@ -74,32 +77,40 @@ export class GoogleMapTilesSource {
   }
 
   private addSourceAndLayer(map: Map) {
-    map.addSource("google-map-tiles", {
+    map.addSource(SOURCE_NAME, {
       "type": "raster",
       "tiles": [this.tileUrl],
       "tileSize": 256,
     });
     map.addLayer({
-      "id": "google-map-tiles",
-      "source": "google-map-tiles",
+      "id": LAYER_NAME,
+      "source": SOURCE_NAME,
       "type": "raster",
     });
+
+    this.source = map.getSource(SOURCE_NAME);
   }
 
   private setupAttribution(map: Map) {
-    map._controls.forEach((control) => {
-      if (
-        control instanceof AttributionControl &&
-        isDefaultAttributionControl(control)
-      ) {
-        map.removeControl(control);
-      }
-    });
-
-    map.addControl(this.attributionControl, "bottom-right");
-    map.on("sourcedata", (e) => {
+    map.on("sourcedata", async (e) => {
       if (e.isSourceLoaded) {
-        this.updateAttribution(e.target.getBounds(), e.target.getZoom());
+        await this.updateAttribution(
+          e.target.getBounds(),
+          e.target.getZoom(),
+        );
+
+        map._controls.forEach((control) => {
+          if (control instanceof AttributionControl) {
+            // Trigger the attribution control to update its attributions.
+            // This is a workaround since MapLibre doesn't expose a direct
+            // update method for the attribution control.
+            control._updateData({
+              sourceDataType: "metadata",
+              type: "",
+              dataType: "source",
+            });
+          }
+        });
       }
     });
   }
@@ -115,11 +126,8 @@ export class GoogleMapTilesSource {
         bounds.getWest(),
       );
 
-      if (
-        this.attributionControl.options.customAttribution !== viewport.copyright
-      ) {
-        this.attributionControl.options.customAttribution = viewport.copyright;
-        this.attributionControl._updateAttributions();
+      if (this.source) {
+        this.source.attribution = viewport.copyright;
       }
     } catch (error) {
       console.warn("Failed to update attribution:", error);
@@ -134,7 +142,7 @@ export async function addGoogleMapTiles(
   apiKey: string,
   map: Map,
   options?: SessionOptions,
-): Promise<GoogleMapTilesSource> {
+): Promise<GoogleMapTilesSourceManager> {
   if (!apiKey) {
     throw new Error("Google Maps API key is required");
   }
@@ -142,13 +150,10 @@ export async function addGoogleMapTiles(
     throw new Error("MapLibre map instance is required");
   }
 
-  const googleMapTiles = await GoogleMapTilesSource.create(apiKey, options);
+  const googleMapTiles = await GoogleMapTilesSourceManager.create(
+    apiKey,
+    options,
+  );
   googleMapTiles.addToMap(map);
   return googleMapTiles;
-}
-
-function isDefaultAttributionControl(control: AttributionControl) {
-  const defaultAttribution =
-    '<a href="https://maplibre.org/" target="_blank">MapLibre</a>';
-  return control.options.customAttribution === defaultAttribution;
 }
