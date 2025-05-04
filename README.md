@@ -75,14 +75,14 @@ interface SessionOptions {
 
 ## 🔧 Advanced Usage
 
-### Using GoogleMapTilesSource Directly
+### Using GoogleMapTilesSourceManager Directly
 
 For more control over the tile source:
 
 ```typescript
-import { GoogleMapTilesSource } from "@bamnet/google-map-tiles";
+import { GoogleMapTilesSourceManager } from "@bamnet/google-map-tiles";
 
-const source = await GoogleMapTilesSource.create("YOUR_API_KEY", {
+const source = await GoogleMapTilesSourceManager.create("YOUR_API_KEY", {
   mapType: "satellite",
   language: "fr",
   region: "fr",

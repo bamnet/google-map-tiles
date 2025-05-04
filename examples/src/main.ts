@@ -3,7 +3,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { Map } from "maplibre-gl";
 import {
   addGoogleMapTiles,
-  type GoogleMapTilesSource,
+  type GoogleMapTilesSourceManager,
   type LayerType,
   type MapType,
   type SessionOptions,
@@ -16,7 +16,7 @@ const map = new Map({
   zoom: 1,
 });
 
-let currentTiles: GoogleMapTilesSource | null = null;
+let currentTiles: GoogleMapTilesSourceManager | null = null;
 
 // Get DOM elements
 const apiKeyInput = document.getElementById("apiKey") as HTMLInputElement;
