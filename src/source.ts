@@ -5,8 +5,13 @@ import {
   type SessionResponse,
 } from "./tiles.ts";
 
-/** Attribution used until a viewport-specific attribution is fetched. */
-export const DEFAULT_ATTRIBUTION = "© Google";
+/**
+ * Attribution used until a viewport-specific attribution is fetched, and when
+ * the API returns none. Google's policies ask new integrations to use
+ * "Google Maps" rather than "Google":
+ * https://developers.google.com/maps/documentation/tile/policies
+ */
+export const DEFAULT_ATTRIBUTION = "Google Maps";
 
 /**
  * Tile size, in CSS pixels, for Google 2D tiles. Tiles use the standard
