@@ -151,15 +151,14 @@ export class GoogleMapTiles {
       throw new Error("Session not created. Call createSession() first.");
     }
 
-    const url =
-      `${API_BASE_URL}/tile/v1/viewport?session=${this.session.session}&key=${this.apiKey}&zoom=${zoom}&north=${north}&south=${south}&east=${east}&west=${west}`;
+    const url = `${API_BASE_URL}/tile/v1/viewport?session=${this.session.session}&key=${this.apiKey}&zoom=${zoom}&north=${north}&south=${south}&east=${east}&west=${west}`;
     const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`Error fetching viewport: ${response.statusText}`);
     }
 
-    return await response.json() as ViewportResponse;
+    return (await response.json()) as ViewportResponse;
   }
 
   /**
