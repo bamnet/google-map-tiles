@@ -99,8 +99,15 @@ async function stubGoogle(page: Page): Promise<StubLog> {
       });
     }
     if (url.pathname === "/tile/v1/viewport" && mapType) {
+      // Like Google's, the copyright depends on the view: here, the zoom and
+      // whether the center is west or east of Greenwich.
+      const param = (name: string) => Number(url.searchParams.get(name));
+      const side = param("west") + param("east") < 0 ? "W" : "E";
       return route.fulfill({
-        json: { copyright: `Stub ${mapType} data`, maxZoomRects: [] },
+        json: {
+          copyright: `Stub ${mapType} data z${param("zoom")} ${side}`,
+          maxZoomRects: [],
+        },
       });
     }
     return route.fulfill({ status: 404, json: { error: { code: 404 } } });
@@ -137,6 +144,20 @@ async function expectMapColor(page: Page, expected: RGB) {
     .toBe(true);
 }
 
+/**
+ * Waits for the attribution to show the stub's copyright for a map type, and
+ * optionally a zoom and side of Greenwich, followed by MapLibre's own.
+ */
+async function expectAttribution(
+  page: Page,
+  mapType: string,
+  view = "z\\d+ [EW]",
+) {
+  await expect(attribution(page)).toHaveText(
+    new RegExp(`^Stub ${mapType} data ${view} \\| MapLibre$`),
+  );
+}
+
 const attribution = (page: Page) =>
   page.locator(".maplibregl-ctrl-attrib-inner");
 const logo = (page: Page) => page.getByRole("img", { name: "Google Maps" });
@@ -159,7 +180,7 @@ test("shows Google tiles, attribution and the logo", async ({ page }) => {
   await page.goto("/");
 
   await expectMapColor(page, COLORS.roadmap);
-  await expect(attribution(page)).toHaveText("Stub roadmap data | MapLibre");
+  await expectAttribution(page, "roadmap");
   await expect(logo(page)).toBeVisible();
   await expect(logo(page)).toHaveAttribute(
     "src",
@@ -182,14 +203,14 @@ test("changing the map type swaps tiles, attribution and logo", async ({
 }) => {
   const log = await stubGoogle(page);
   await page.goto("/");
-  await expect(attribution(page)).toHaveText("Stub roadmap data | MapLibre");
+  await expectAttribution(page, "roadmap");
 
   // The example replaces the source with setStyle().
   log.tiles = [];
   await page.locator("#mapType").selectOption("satellite");
 
   await expectMapColor(page, COLORS.satellite);
-  await expect(attribution(page)).toHaveText("Stub satellite data | MapLibre");
+  await expectAttribution(page, "satellite");
   await expect(logo(page)).toHaveAttribute(
     "src",
     GOOGLE_MAPS_LOGO.dark.dataUri,
@@ -211,7 +232,7 @@ test("invalid options are reported and leave the map as it was", async ({
 }) => {
   const log = await stubGoogle(page);
   await page.goto("/");
-  await expect(attribution(page)).toHaveText("Stub roadmap data | MapLibre");
+  await expectAttribution(page, "roadmap");
 
   await page.locator("#mapType").selectOption("terrain");
 
@@ -227,12 +248,12 @@ test("invalid options are reported and leave the map as it was", async ({
     "terrain",
   ]);
   await expectMapColor(page, COLORS.roadmap);
-  await expect(attribution(page)).toHaveText("Stub roadmap data | MapLibre");
+  await expectAttribution(page, "roadmap");
 
   // With the roads layer, terrain is accepted.
   await page.locator("#layerType").selectOption("layerRoadmap");
   await expectMapColor(page, COLORS.terrain);
-  await expect(attribution(page)).toHaveText("Stub terrain data | MapLibre");
+  await expectAttribution(page, "terrain");
   await expect(logo(page)).toHaveAttribute(
     "src",
     GOOGLE_MAPS_LOGO.light.dataUri,
@@ -245,4 +266,27 @@ test("invalid options are reported and leave the map as it was", async ({
         !p.includes("status of 400 (Bad Request)"),
     ),
   ).toEqual([]);
+});
+
+test("attribution follows the map as you pan and zoom", async ({ page }) => {
+  await stubGoogle(page);
+  // The example keeps the view in the URL: #zoom/lat/lng.
+  await page.goto("/#4/40/-10");
+  await expectAttribution(page, "roadmap", "z4 W");
+
+  // Double-clicking zooms in one level.
+  const map = page.locator("#map canvas");
+  await map.dblclick();
+  await expectAttribution(page, "roadmap", "z5 W");
+
+  // Drag the map left, so the view moves east across Greenwich.
+  const box = await map.boundingBox();
+  if (!box) throw new Error("The map isn't visible");
+  const y = box.y + box.height / 2;
+  await page.mouse.move(box.x + box.width - 10, y);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 10, y, { steps: 20 });
+  await page.mouse.up();
+  await expectAttribution(page, "roadmap", "z5 E");
+  expect(problems).toEqual([]);
 });
