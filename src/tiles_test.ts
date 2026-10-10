@@ -1,5 +1,11 @@
 import { afterEach, expect, mock, spyOn, test } from "bun:test";
-import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
+import {
+  GoogleMapTiles,
+  ImageFormat,
+  MapType,
+  Scale,
+  type SessionOptions,
+} from "./tiles.ts";
 
 // Mock responses
 const mockSessionResponse = {
@@ -275,4 +281,34 @@ test("GoogleMapTiles - uses the baseUrl option", async () => {
   expect(client.tileUrlTemplate()).toStartWith(
     "https://tiles.example.com/v1/2dtiles/{z}/{x}/{y}?",
   );
+});
+
+test("SessionOptions - enums and their string values are interchangeable", () => {
+  const withEnums: SessionOptions = {
+    mapType: MapType.Satellite,
+    language: "en-US",
+    region: "US",
+    scale: Scale.Factor2x,
+    imageFormat: ImageFormat.Jpeg,
+  };
+  const withStrings: SessionOptions = {
+    mapType: "satellite",
+    language: "en-US",
+    region: "US",
+    scale: "scaleFactor2x",
+    imageFormat: "jpeg",
+  };
+  // Both send the same request body.
+  expect(JSON.stringify(withEnums)).toBe(JSON.stringify(withStrings));
+
+  // Invalid values are compile errors (checked by `bun run check`).
+  const invalid: SessionOptions[] = [
+    // @ts-expect-error: Street View needs the Street View Tiles API.
+    { mapType: "streetview", language: "en-US", region: "US" },
+    // @ts-expect-error: not a scale value.
+    { ...withStrings, scale: "2x" },
+    // @ts-expect-error: not an image format.
+    { ...withStrings, imageFormat: "webp" },
+  ];
+  expect(invalid).toHaveLength(3);
 });

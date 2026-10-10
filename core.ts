@@ -9,8 +9,10 @@
 export {
   API_BASE_URL,
   GoogleMapTiles,
+  ImageFormat,
   LayerType,
   MapType,
+  Scale,
 } from "./src/tiles.ts";
 export type {
   ClientOptions,

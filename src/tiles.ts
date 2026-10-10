@@ -28,17 +28,21 @@ export enum MapType {
   Roadmap = "roadmap",
   /** Satellite imagery tiles. */
   Satellite = "satellite",
-  /** Terrain tiles with relief information. */
+  /**
+   * Terrain tiles with relief information. Requires the
+   * {@link LayerType.Roadmap} layer type.
+   */
   Terrain = "terrain",
-  /** Street View panorama tiles (requires additional parameters not fully supported by this basic type). */
-  Streetview = "streetview",
 }
 
 /**
  * Represents the available layer types for requesting tiles.
  */
 export enum LayerType {
-  /** Road names and outlines. Required when using Terrain MapType, optional for Satellite. */
+  /**
+   * Road names and outlines. Required with {@link MapType.Terrain}, optional
+   * with {@link MapType.Satellite}, and no effect on {@link MapType.Roadmap}.
+   */
   Roadmap = "layerRoadmap",
   /** Outline areas where Street View is available. */
   StreetView = "layerStreetview",
@@ -47,27 +51,63 @@ export enum LayerType {
 }
 
 /**
+ * Represents the available label scales for tiles.
+ */
+export enum Scale {
+  /** Standard label size. The default. */
+  Factor1x = "scaleFactor1x",
+  /** Doubles label size and removes minor feature labels. */
+  Factor2x = "scaleFactor2x",
+  /** Quadruples label size and removes minor feature labels. */
+  Factor4x = "scaleFactor4x",
+}
+
+/**
+ * Represents the available tile image formats.
+ */
+export enum ImageFormat {
+  /** PNG, which supports transparency. */
+  Png = "png",
+  /** JPEG. Not recommended for overlays, since it has no transparency. */
+  Jpeg = "jpeg",
+}
+
+/**
  * Configuration options used when creating a new Tile API session.
+ * @see https://developers.google.com/maps/documentation/tile/session_tokens
  */
 export interface SessionOptions {
   /** The type of map tiles to request (e.g., roadmap, satellite). */
   mapType: MapType | `${MapType}`;
-  /** The language to use for labels on the map tiles (e.g., "en-US"). */
+  /** An IETF language tag for labels on the map tiles (e.g., "en-US"). */
   language: string;
-  /** The region code (CLDR identifier) to tailor map details (e.g., "US"). */
+  /** A CLDR region identifier for the user's location (e.g., "US"). */
   region: string;
   /**
-   * The image format for the tiles (e.g., "png", "jpeg").
+   * The image format for the tiles. Chosen automatically if omitted.
    */
-  imageFormat?: string;
+  imageFormat?: ImageFormat | `${ImageFormat}`;
   /**
-   * The scale factor for the tiles. Use "scaleFactor2x" for high-DPI devices.
+   * The label scale for the tiles.
    * @default "scaleFactor1x"
    */
-  scale?: string;
+  scale?: Scale | `${Scale}`;
+  /**
+   * Whether to return high-resolution tiles. Only has an effect with a
+   * {@link Scale.Factor2x} or {@link Scale.Factor4x} scale.
+   */
   highDpi?: boolean;
+  /**
+   * Layers to add to the map. {@link MapType.Terrain} requires
+   * {@link LayerType.Roadmap}.
+   */
   layerTypes?: Array<LayerType | `${LayerType}`>;
+  /** Style objects for map features. Only valid with {@link MapType.Roadmap}. */
   styles?: Array<unknown>;
+  /**
+   * Whether to render `layerTypes` as a separate overlay, without the base
+   * map. Ignored if no `layerTypes` are given.
+   */
   overlay?: boolean;
   /**
    * An array of values specifying additional options to apply.
