@@ -1,7 +1,11 @@
 // Only types are imported from maplibre-gl, so this module works with
 // whichever maplibre-gl instance the application uses.
 import type { ControlPosition, IControl, Map } from "maplibre-gl";
-import { createGoogleLogo } from "./google_logo.ts";
+import {
+  createGoogleLogo,
+  GOOGLE_MAPS_LOGO,
+  type LogoVariant,
+} from "./google_logo.ts";
 import type { GoogleMapTiles } from "./tiles.ts";
 
 /**
@@ -16,6 +20,17 @@ export type GoogleSourceResolver = (
   tiles: string[],
 ) => (() => Promise<GoogleMapTiles>) | undefined;
 
+/** Options for {@link GoogleMapsControl}. */
+export interface GoogleMapsControlOptions {
+  /**
+   * Which Google Maps logo to show. `"auto"` shows the dark-outlined logo
+   * while a satellite source is visible, and the light-outlined one
+   * otherwise. Set `"light"` or `"dark"` to match a custom map style.
+   * @default "auto"
+   */
+  logo?: "auto" | LogoVariant;
+}
+
 interface GoogleSourceRef {
   id: string;
   tiles: string[];
@@ -29,12 +44,15 @@ interface GoogleSourceRef {
  * Finds Google sources in the map's style (again whenever the style changes,
  * including after `setStyle()`), and after each move sets every visible one's
  * attribution to the viewport `copyright` from the Map Tiles API. The logo is
- * shown while at least one Google source is visible.
+ * shown while at least one Google source is visible, in the variant that
+ * suits the imagery.
  */
 export class GoogleMapsControl implements IControl {
   private readonly resolve: GoogleSourceResolver;
+  private readonly logoOption: "auto" | LogoVariant;
   private map?: Map;
   private container?: HTMLElement;
+  private logo?: HTMLImageElement;
   private sources: GoogleSourceRef[] = [];
   private sourceKey = "";
   /** The sourceKey a refresh is in flight for, if any. */
@@ -44,9 +62,14 @@ export class GoogleMapsControl implements IControl {
 
   /**
    * @param resolve Identifies Google sources and the client serving each one
+   * @param options Optional control configuration
    */
-  constructor(resolve: GoogleSourceResolver) {
+  constructor(
+    resolve: GoogleSourceResolver,
+    options: GoogleMapsControlOptions = {},
+  ) {
     this.resolve = resolve;
+    this.logoOption = options.logo ?? "auto";
   }
 
   getDefaultPosition(): ControlPosition {
@@ -58,7 +81,12 @@ export class GoogleMapsControl implements IControl {
     this.map = map;
     this.container = document.createElement("div");
     this.container.className = "maplibregl-ctrl";
-    this.container.appendChild(createGoogleLogo());
+    // The logo carries Google's required clear space as its own margin.
+    this.container.style.margin = "0";
+    this.logo = createGoogleLogo(
+      this.logoOption === "auto" ? "light" : this.logoOption,
+    );
+    this.container.appendChild(this.logo);
     map.on("styledata", this.onStyleData);
     map.on("moveend", this.onMoveEnd);
     this.onStyleData();
@@ -71,6 +99,7 @@ export class GoogleMapsControl implements IControl {
     map.off("moveend", this.onMoveEnd);
     this.container?.remove();
     this.container = undefined;
+    this.logo = undefined;
     this.map = undefined;
     this.sources = [];
     this.sourceKey = "";
@@ -91,14 +120,16 @@ export class GoogleMapsControl implements IControl {
     const results = await Promise.all(
       this.sources.map(async ({ id, client }) => {
         try {
-          const viewport = await (await client()).getViewport(
+          const tiles = await client();
+          const mapType = tiles.sessionOptions?.mapType;
+          const viewport = await tiles.getViewport(
             zoom,
             bounds.getNorth(),
             bounds.getSouth(),
             bounds.getEast(),
             bounds.getWest(),
           );
-          return { id, copyright: viewport.copyright };
+          return { id, mapType, copyright: viewport.copyright };
         } catch (error) {
           console.warn(`Failed to update attribution for "${id}":`, error);
           return undefined;
@@ -106,6 +137,11 @@ export class GoogleMapsControl implements IControl {
       }),
     );
     if (generation !== this.generation || this.map !== map) return;
+
+    if (this.logo && this.logoOption === "auto") {
+      const satellite = results.some((r) => r?.mapType === "satellite");
+      this.logo.src = GOOGLE_MAPS_LOGO[satellite ? "dark" : "light"].dataUri;
+    }
 
     let changed = false;
     for (const result of results) {

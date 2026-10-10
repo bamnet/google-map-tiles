@@ -1,6 +1,7 @@
 /**
- * The MapLibre-independent core: the Tile API client, a session pool, and
- * helpers that build plain MapLibre source and style JSON. Runs anywhere `fetch` is available,
+ * The MapLibre-independent core: the Tile API client, a session pool,
+ * helpers that build plain MapLibre source and style JSON, and the Google Maps
+ * logo. Runs anywhere `fetch` is available,
  * including servers, and does not require maplibre-gl.
  *
  * @module
@@ -21,6 +22,13 @@ export type {
 
 export { SessionPool, sessionKey } from "./src/session_pool.ts";
 export type { SessionPoolOptions } from "./src/session_pool.ts";
+
+export { GOOGLE_MAPS_LOGO } from "./src/google_logo.ts";
+export type {
+  GoogleMapsLogo,
+  LogoImage,
+  LogoVariant,
+} from "./src/google_logo.ts";
 
 export {
   createGoogleSource,

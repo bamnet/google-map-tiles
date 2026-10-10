@@ -110,7 +110,7 @@ export class GoogleMapTiles {
   apiKey: string;
   session: SessionResponse | null = null;
 
-  private sessionOptions: SessionOptions | null = null;
+  private lastOptions: SessionOptions | null = null;
   private readonly baseUrl: string;
 
   /**
@@ -147,7 +147,7 @@ export class GoogleMapTiles {
     }
 
     this.session = data as SessionResponse;
-    this.sessionOptions = request;
+    this.lastOptions = request;
     return this.session;
   }
 
@@ -157,10 +157,15 @@ export class GoogleMapTiles {
    * @throws {Error} If no session has been created yet, or the request fails
    */
   async refreshSession(): Promise<SessionResponse> {
-    if (!this.sessionOptions) {
+    if (!this.lastOptions) {
       throw new Error("Session not created. Call createSession() first.");
     }
-    return await this.createSession(this.sessionOptions);
+    return await this.createSession(this.lastOptions);
+  }
+
+  /** The options the current session was created with, if any. */
+  get sessionOptions(): Readonly<SessionOptions> | null {
+    return this.lastOptions;
   }
 
   /**

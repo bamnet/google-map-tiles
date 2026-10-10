@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, expect, mock, test } from "bun:test";
-import { GoogleMapsControl } from "./google_maps_control.ts";
+import {
+  GoogleMapsControl,
+  type GoogleMapsControlOptions,
+} from "./google_maps_control.ts";
+import { GOOGLE_MAPS_LOGO } from "./google_logo.ts";
 import { SessionPool } from "./session_pool.ts";
 import type { SessionOptions } from "./tiles.ts";
 import { FakeMap, fakeDocument, mockTilesApi, settle } from "./test_helpers.ts";
@@ -16,7 +20,10 @@ afterEach(() => {
 });
 
 /** A map with one Google source ("google") and one other ("other"). */
-function setup() {
+function setup(
+  options: SessionOptions = roadmap,
+  controlOptions?: GoogleMapsControlOptions,
+) {
   const pool = new SessionPool("test-api-key");
   const map = new FakeMap();
   map.sources.google = {
@@ -28,10 +35,12 @@ function setup() {
     { id: "google", type: "raster", source: "google" },
     { id: "other", type: "raster", source: "other" },
   ];
-  const control = new GoogleMapsControl((_id, tiles) =>
-    tiles[0].startsWith("https://google/")
-      ? () => pool.client(roadmap)
-      : undefined,
+  const control = new GoogleMapsControl(
+    (_id, tiles) =>
+      tiles[0].startsWith("https://google/")
+        ? () => pool.client(options)
+        : undefined,
+    controlOptions,
   );
   return { map, control };
 }
@@ -168,4 +177,36 @@ test("GoogleMapsControl - one request while a style is loading", async () => {
   );
   expect(viewports).toHaveLength(1);
   expect(map.sources.google.attribution).toBe("© session-1 z3");
+});
+
+/** The logo image the control shows. */
+const logoOf = (control: GoogleMapsControl) =>
+  (control as unknown as { logo: HTMLImageElement }).logo;
+
+test("GoogleMapsControl - light logo over roadmap", async () => {
+  mockTilesApi();
+  const { map, control } = setup();
+  map.addControl(control);
+  await settle();
+
+  expect(logoOf(control).src).toBe(GOOGLE_MAPS_LOGO.light.dataUri);
+  expect(logoOf(control).alt).toBe("Google Maps");
+});
+
+test("GoogleMapsControl - dark logo over satellite", async () => {
+  mockTilesApi();
+  const { map, control } = setup({ ...roadmap, mapType: "satellite" });
+  map.addControl(control);
+  await settle();
+
+  expect(logoOf(control).src).toBe(GOOGLE_MAPS_LOGO.dark.dataUri);
+});
+
+test("GoogleMapsControl - a fixed logo option overrides auto", async () => {
+  mockTilesApi();
+  const { map, control } = setup(roadmap, { logo: "dark" });
+  map.addControl(control);
+  await settle();
+
+  expect(logoOf(control).src).toBe(GOOGLE_MAPS_LOGO.dark.dataUri);
 });
