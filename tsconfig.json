@@ -12,5 +12,5 @@
     "skipLibCheck": true
   },
   "include": ["mod.ts", "core.ts", "src"],
-  "exclude": ["src/**/*_test.ts"]
+  "exclude": ["src/**/*_test.ts", "src/test_helpers.ts"]
 }

@@ -18,7 +18,8 @@
       "bun.lock",
       "tsconfig*.json",
       "bunfig.toml",
-      "scripts"
+      "scripts",
+      "src/test_helpers.ts"
     ]
   }
 }

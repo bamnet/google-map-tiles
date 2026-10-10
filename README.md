@@ -93,6 +93,42 @@ source.addToMap(map);
 source.removeFromMap(map);
 ```
 
+### Declaring Google Tiles in a Style
+
+To treat Google tiles like any other source, register the
+`GoogleMapTilesProtocol` and use its sources in your style. They survive
+`setStyle()`, can sit under labels or other layers, and a style can use several:
+
+```typescript
+import { addProtocol, Map } from "maplibre-gl";
+import { GoogleMapTilesProtocol } from "@bamnet/google-map-tiles";
+
+const google = new GoogleMapTilesProtocol("YOUR_API_KEY");
+addProtocol("google", google.handler);
+
+const map = new Map({
+  container: "map",
+  style: {
+    version: 8,
+    sources: {
+      google: google.source({
+        mapType: "roadmap",
+        language: "en-US",
+        region: "us",
+      }),
+    },
+    layers: [{ id: "google", type: "raster", source: "google" }],
+  },
+});
+
+// The Google Maps logo, and attribution for every Google source in the style
+map.addControl(google.control());
+```
+
+Sources look like `google://roadmap/{z}/{x}/{y}?language=en-US&region=us` and
+don't contain your API key. Sessions are created when tiles are first needed,
+shared between sources with the same options, and replaced before they expire.
+
 ## 📐 With a MapLibre Style (MapLibre Native, Flutter, servers)
 
 Any MapLibre renderer can load a style. Build one, for example on a server, and

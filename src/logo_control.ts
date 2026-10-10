@@ -22,11 +22,7 @@ export class GoogleLogoControl implements IControl {
 
   /** Add an image with the Google Logo. */
   onAdd(_: Map): HTMLElement {
-    this.img = document.createElement("img");
-    this.img.style.padding = "0px 8px";
-    this.img.src =
-      "https://developers.google.com/static/maps/documentation/images/google_on_white.png";
-    this.img.alt = "Google Maps";
+    this.img = createGoogleLogo();
     return this.img;
   }
 
@@ -37,4 +33,14 @@ export class GoogleLogoControl implements IControl {
       this.img = undefined;
     }
   }
+}
+
+/** Creates the Google Maps logo image used by the map controls. */
+export function createGoogleLogo(): HTMLImageElement {
+  const img = document.createElement("img");
+  img.style.padding = "0px 8px";
+  img.src =
+    "https://developers.google.com/static/maps/documentation/images/google_on_white.png";
+  img.alt = "Google Maps";
+  return img;
 }

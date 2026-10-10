@@ -1,14 +1,10 @@
-import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
+import { type GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
 import { TILE_SIZE } from "./maplibre_style.ts";
+import { SessionPool } from "./session_pool.ts";
+import { GoogleMapsControl } from "./google_maps_control.ts";
 // Only types are imported from maplibre-gl, so this module works with
 // whichever maplibre-gl instance the application uses.
-import type {
-  LngLatBounds,
-  Map,
-  MapSourceDataEvent,
-  Source,
-} from "maplibre-gl";
-import { addGoogleLogo, type GoogleLogoControl } from "./logo_control.ts";
+import type { Map } from "maplibre-gl";
 
 // Default options
 const defaultSessionOptions: SessionOptions = {
@@ -21,7 +17,11 @@ const LAYER_NAME = "google-map-tiles";
 const SOURCE_NAME = "google-map-tiles";
 
 /**
- * A MapLibre plugin for Google Maps tiles to handle attribution and session management.
+ * Adds Google tiles to a MapLibre map as a source and layer, with the Google
+ * Maps logo and attribution kept current. The session is replaced before it
+ * expires, and the source's tile URLs are updated to match.
+ *
+ * To declare Google tiles in a style instead, see `GoogleMapTilesProtocol`.
  *
  * @example
  * ```ts
@@ -30,26 +30,37 @@ const SOURCE_NAME = "google-map-tiles";
  * ```
  */
 export class GoogleMapTilesSourceManager {
-  readonly client: GoogleMapTiles;
-
-  private source?: Source;
-  private logo?: GoogleLogoControl;
-  private onSourceData?: (e: MapSourceDataEvent) => void;
+  private readonly pool: SessionPool;
+  private readonly options: SessionOptions;
+  private current?: GoogleMapTiles;
+  private control?: GoogleMapsControl;
 
   /**
-   * Creates a new GoogleMapTilesSource with an active session.
+   * Creates a new GoogleMapTilesSourceManager with an active session.
+   * @throws {Error} If the session can't be created
    */
   static async create(
     apiKey: string,
     options: SessionOptions = defaultSessionOptions,
   ): Promise<GoogleMapTilesSourceManager> {
-    const tiles = new GoogleMapTilesSourceManager(apiKey);
-    await tiles.client.createSession(options);
-    return tiles;
+    const manager = new GoogleMapTilesSourceManager(apiKey, options);
+    manager.current = await manager.pool.client(options);
+    return manager;
   }
 
-  constructor(apiKey: string) {
-    this.client = new GoogleMapTiles(apiKey);
+  private constructor(apiKey: string, options: SessionOptions) {
+    this.pool = new SessionPool(apiKey);
+    this.options = options;
+  }
+
+  /** The client for the current session. */
+  get client(): GoogleMapTiles {
+    if (!this.current) {
+      throw new Error(
+        "Session not created. Use GoogleMapTilesSourceManager.create().",
+      );
+    }
+    return this.current;
   }
 
   /** @inheritDoc GoogleMapTiles.tileUrlTemplate */
@@ -58,37 +69,10 @@ export class GoogleMapTilesSourceManager {
   }
 
   /**
-   * Adds the Google Maps tiles to the map.
+   * Adds the Google Maps tiles, logo and attribution to the map.
    * @param map The MapLibre map instance
    */
   addToMap(map: Map) {
-    this.addSourceAndLayer(map);
-    this.setupAttribution(map);
-    this.logo = addGoogleLogo(map);
-  }
-
-  /**
-   * Removes the Google Maps tiles and controls from the map.
-   */
-  removeFromMap(map: Map): void {
-    if (map.getLayer(LAYER_NAME)) {
-      map.removeLayer(LAYER_NAME);
-    }
-    if (map.getSource(SOURCE_NAME)) {
-      map.removeSource(SOURCE_NAME);
-    }
-
-    if (this.onSourceData) {
-      map.off("sourcedata", this.onSourceData);
-      this.onSourceData = undefined;
-    }
-    if (this.logo) {
-      map.removeControl(this.logo);
-      this.logo = undefined;
-    }
-  }
-
-  private addSourceAndLayer(map: Map) {
     map.addSource(SOURCE_NAME, {
       type: "raster",
       tiles: [this.tileUrl],
@@ -100,46 +84,42 @@ export class GoogleMapTilesSourceManager {
       type: "raster",
     });
 
-    this.source = map.getSource(SOURCE_NAME);
+    this.control = new GoogleMapsControl((id) =>
+      id === SOURCE_NAME ? () => this.currentClient(map) : undefined,
+    );
+    map.addControl(this.control);
   }
 
-  private setupAttribution(map: Map) {
-    this.onSourceData = async (e) => {
-      if (e.isSourceLoaded) {
-        await this.updateAttribution(e.target.getBounds(), e.target.getZoom());
-
-        // Ask the map's attribution control to re-read source attributions.
-        // AttributionControl refreshes on "sourcedata" events carrying
-        // metadata, so firing one avoids depending on the AttributionControl
-        // class or its private methods. The event has no isSourceLoaded, so
-        // it does not re-trigger this listener.
-        map.fire("sourcedata", {
-          dataType: "source",
-          sourceDataType: "metadata",
-          sourceId: SOURCE_NAME,
-        });
-      }
-    };
-    map.on("sourcedata", this.onSourceData);
-  }
-
-  async updateAttribution(bounds: LngLatBounds, zoom: number) {
-    try {
-      const z = Math.round(zoom);
-      const viewport = await this.client.getViewport(
-        z,
-        bounds.getNorth(),
-        bounds.getSouth(),
-        bounds.getEast(),
-        bounds.getWest(),
-      );
-
-      if (this.source) {
-        this.source.attribution = viewport.copyright;
-      }
-    } catch (error) {
-      console.warn("Failed to update attribution:", error);
+  /**
+   * Removes the Google Maps tiles, logo and attribution from the map.
+   */
+  removeFromMap(map: Map): void {
+    if (this.control) {
+      map.removeControl(this.control);
+      this.control = undefined;
     }
+    if (map.getLayer(LAYER_NAME)) {
+      map.removeLayer(LAYER_NAME);
+    }
+    if (map.getSource(SOURCE_NAME)) {
+      map.removeSource(SOURCE_NAME);
+    }
+  }
+
+  /**
+   * Returns a client with a current session. If the pool replaced the
+   * session, points the source's tiles at the new one.
+   */
+  private async currentClient(map: Map): Promise<GoogleMapTiles> {
+    const client = await this.pool.client(this.options);
+    if (client !== this.current) {
+      this.current = client;
+      const source = map.getSource(SOURCE_NAME) as
+        | { setTiles?: (tiles: string[]) => unknown }
+        | undefined;
+      source?.setTiles?.([client.tileUrlTemplate()]);
+    }
+    return client;
   }
 }
 
