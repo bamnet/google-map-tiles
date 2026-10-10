@@ -121,13 +121,12 @@ export class GoogleMapsControl {
         try {
           const tiles = await client();
           const mapType = tiles.sessionOptions?.mapType;
-          const viewport = await tiles.getViewport(
-            zoom,
-            bounds.getNorth(),
-            bounds.getSouth(),
-            bounds.getEast(),
-            bounds.getWest(),
-          );
+          const viewport = await tiles.getViewport(zoom, {
+            north: bounds.getNorth(),
+            south: bounds.getSouth(),
+            east: bounds.getEast(),
+            west: bounds.getWest(),
+          });
           return { id, mapType, copyright: viewport.copyright };
         } catch (error) {
           console.warn(`Failed to update attribution for "${id}":`, error);
