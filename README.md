@@ -277,6 +277,10 @@ bun install
 # Run tests
 bun test
 
+# Run browser tests of the example, with Google's API stubbed (no key needed)
+bunx playwright install chromium  # once
+bun run test:e2e
+
 # Check types
 bun run check
 

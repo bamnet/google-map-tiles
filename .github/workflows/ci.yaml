@@ -24,3 +24,14 @@ jobs:
           node-version: 24
 
       - run: bun run smoke:node
+
+      - run: bunx playwright install --with-deps chromium
+
+      - run: bun run test:e2e
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
