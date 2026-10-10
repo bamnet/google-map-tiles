@@ -9,11 +9,11 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "typescript": "~5.7.2",
+    "typescript": "^7.0.2",
     "vite": "^8.0.16"
   },
   "dependencies": {
-    "@bamnet/google-map-tiles": "npm:@jsr/bamnet__google-map-tiles@^0",
+    "@bamnet/google-map-tiles": "file:..",
     "maplibre-gl": "^5.4.0"
   }
 }

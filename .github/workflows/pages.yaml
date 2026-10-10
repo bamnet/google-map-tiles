@@ -29,22 +29,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install Dependencies
-        working-directory: examples
-        run: npm install
-
-      - name: Update our depdendency
-        working-directory: examples
-        run: npm update @bamnet/google-map-tiles
+        run: bun install --frozen-lockfile
 
       - name: Build
         working-directory: examples
-        run: npm run build -- --base=/google-map-tiles/
+        run: bun run build --base=/google-map-tiles/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

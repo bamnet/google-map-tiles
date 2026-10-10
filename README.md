@@ -128,13 +128,16 @@ to:
 - 🌐 Configure language and region settings
 - 🔑 Handle API keys
 
-To run the example:
+The example is part of the repo's Bun workspace and runs against the library
+source in this repo, so library changes show up immediately. To run it:
 
 ```bash
-cd examples
-npm install
-npm run dev
+bun install
+bun run examples:dev
 ```
+
+To pre-fill your API key, copy `examples/.env.example` to `examples/.env.local`
+and set `VITE_GOOGLE_MAPS_API_KEY`.
 
 ## 👩‍💻 Development
 
