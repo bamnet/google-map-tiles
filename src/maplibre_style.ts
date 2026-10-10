@@ -73,6 +73,7 @@ export interface GoogleSource {
  * The result is plain JSON, so it can be built on a server and sent to any
  * MapLibre client. Its tile URLs contain the API key and stop working at
  * `expiresAt`; create a new source before then.
+ * @throws {TilesApiError} If the API rejects the session
  */
 export async function createGoogleSource(
   apiKey: string,
@@ -99,6 +100,7 @@ export async function createGoogleSource(
  * Useful for serving a style URL to clients that load styles by URL, such as
  * MapLibre Native or Flutter apps. Like {@link createGoogleSource}, the style
  * stops working at `expiresAt`.
+ * @throws {TilesApiError} If the API rejects the session
  */
 export async function createGoogleStyle(
   apiKey: string,

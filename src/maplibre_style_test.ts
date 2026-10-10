@@ -79,6 +79,6 @@ test("createGoogleStyle - builds a style with one layer", async () => {
 test("createGoogleStyle - propagates session errors", async () => {
   mockFetch({ error: { message: "API key not valid." } }, { status: 400 });
   await expect(createGoogleStyle("bad-key", options)).rejects.toThrow(
-    "Error creating session: API key not valid.",
+    "Error creating session: 400 API key not valid.",
   );
 });

@@ -100,7 +100,7 @@ for tiles:
 try {
   await google.validate({ mapType: "roadmap", language: "en-US", region: "us" });
 } catch (error) {
-  // e.g. "Error creating session: API key not valid."
+  // e.g. "Error creating session: 400 API key not valid. Please pass a valid API key."
 }
 ```
 

@@ -1,3 +1,5 @@
+import { tilesApiError } from "./errors.ts";
+
 export const API_BASE_URL = "https://tile.googleapis.com";
 
 /**
@@ -167,7 +169,7 @@ export class GoogleMapTiles {
    * Creates a new map session with the specified parameters.
    * @param request The session configuration
    * @returns Session details including token and expiry
-   * @throws {Error} If the session creation fails
+   * @throws {TilesApiError} If the API rejects the request
    */
   async createSession(request: SessionOptions): Promise<SessionResponse> {
     const url = `${this.baseUrl}/v1/createSession?key=${this.apiKey}`;
@@ -179,14 +181,11 @@ export class GoogleMapTiles {
       body: JSON.stringify(request),
     });
 
-    const data = await response.json();
     if (!response.ok) {
-      // Try to get the detailed error message from the Google Maps API error format
-      const errorMessage = data.error?.message || response.statusText;
-      throw new Error(`Error creating session: ${errorMessage}`);
+      throw await tilesApiError(response, "Error creating session");
     }
 
-    this.session = data as SessionResponse;
+    this.session = (await response.json()) as SessionResponse;
     this.lastOptions = request;
     return this.session;
   }
@@ -194,7 +193,8 @@ export class GoogleMapTiles {
   /**
    * Creates a new session using the options from the last
    * {@link createSession} call.
-   * @throws {Error} If no session has been created yet, or the request fails
+   * @throws {Error} If no session has been created yet
+   * @throws {TilesApiError} If the API rejects the request
    */
   async refreshSession(): Promise<SessionResponse> {
     if (!this.lastOptions) {
@@ -235,7 +235,8 @@ export class GoogleMapTiles {
    * @param east Eastern longitude bound
    * @param west Western longitude bound
    * @returns Viewport details including copyright and zoom rectangles
-   * @throws {Error} If no session exists or the request fails
+   * @throws {Error} If no session exists
+   * @throws {TilesApiError} If the API rejects the request
    */
   async getViewport(
     zoom: number,
@@ -252,7 +253,7 @@ export class GoogleMapTiles {
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`Error fetching viewport: ${response.statusText}`);
+      throw await tilesApiError(response, "Error fetching viewport");
     }
 
     return (await response.json()) as ViewportResponse;

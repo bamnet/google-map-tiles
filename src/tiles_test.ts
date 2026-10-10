@@ -52,13 +52,11 @@ function createTestContext() {
     cleanup: () => {
       globalThis.fetch = originalFetch;
     },
-    mockFetch: (response: unknown, ok = true) => {
+    mockFetch: (response: unknown, status = 200) => {
       globalThis.fetch = (() =>
-        Promise.resolve({
-          ok,
-          json: () => Promise.resolve(response),
-          statusText: ok ? "OK" : "Error",
-        } as Response)) as unknown as typeof fetch;
+        Promise.resolve(
+          Response.json(response, { status }),
+        )) as unknown as typeof fetch;
     },
   };
 }
@@ -99,7 +97,7 @@ test("GoogleMapTiles - createSession failure", async () => {
         ],
       },
     },
-    false,
+    403,
   );
 
   try {
@@ -112,7 +110,7 @@ test("GoogleMapTiles - createSession failure", async () => {
     };
 
     await expect(googleMapTiles.createSession(sessionRequest)).rejects.toThrow(
-      "Error creating session: Requests from referer https://test/ are blocked.",
+      "Error creating session: 403 Requests from referer https://test/ are blocked.",
     );
   } finally {
     ctx.cleanup();
@@ -157,7 +155,7 @@ test("GoogleMapTiles - getViewport failure", async () => {
 
     await googleMapTiles.createSession(sessionRequest);
 
-    ctx.mockFetch({}, false);
+    ctx.mockFetch({}, 500);
     await expect(
       googleMapTiles.getViewport(10, 40, 30, -70, -80),
     ).rejects.toThrow("Error fetching viewport");
