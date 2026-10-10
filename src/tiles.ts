@@ -67,9 +67,9 @@ export enum Scale {
  */
 export enum ImageFormat {
   /** PNG, which supports transparency. */
-  Png = "png",
+  PNG = "png",
   /** JPEG. Not recommended for overlays, since it has no transparency. */
-  Jpeg = "jpeg",
+  JPEG = "jpeg",
 }
 
 /**

@@ -289,7 +289,7 @@ test("SessionOptions - enums and their string values are interchangeable", () =>
     language: "en-US",
     region: "US",
     scale: Scale.Factor2x,
-    imageFormat: ImageFormat.Jpeg,
+    imageFormat: ImageFormat.JPEG,
   };
   const withStrings: SessionOptions = {
     mapType: "satellite",
