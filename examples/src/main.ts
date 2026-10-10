@@ -1,6 +1,9 @@
 import "./style.css";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Map } from "maplibre-gl";
+import { Map, setWorkerUrl } from "maplibre-gl";
+// MapLibre 6 loads its worker from a file next to maplibre-gl.mjs, which
+// bundlers don't copy. Have Vite bundle the worker and pass MapLibre its URL.
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import {
   addGoogleMapTiles,
   type GoogleMapTilesSourceManager,
@@ -9,11 +12,15 @@ import {
   type SessionOptions,
 } from "@bamnet/google-map-tiles";
 
+setWorkerUrl(workerUrl);
+
 // Initialize map without tiles initially
 const map = new Map({
   container: "map",
   center: [0, 0],
   zoom: 1,
+  // Keep the position in the URL (#zoom/lat/lng) so views can be shared.
+  hash: true,
 });
 
 let currentTiles: GoogleMapTilesSourceManager | null = null;
