@@ -11,6 +11,9 @@ const OUTPUT = new URL("../src/google_logo_data.ts", import.meta.url);
 const VARIANTS = {
   LIGHT_OUTLINE_SVG: "GoogleMaps_Logo_WithLightOutline.svg",
   DARK_OUTLINE_SVG: "GoogleMaps_Logo_WithDarkOutline.svg",
+  GRAY_SVG: "GoogleMaps_Logo_Gray.svg",
+  DARK_GRAY_SVG: "GoogleMaps_Logo_DarkGray.svg",
+  WHITE_SVG: "GoogleMaps_Logo_White.svg",
 };
 
 /** Removes the XML declaration, comments and insignificant whitespace. */
