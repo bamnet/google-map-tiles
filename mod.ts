@@ -7,11 +7,6 @@
 export * from "./core.ts";
 
 export {
-  addGoogleMapTiles,
-  GoogleMapTilesSourceManager,
-} from "./src/maplibre_plugin.ts";
-
-export {
   decodeTileUrl,
   encodeTileUrl,
   GoogleMapTilesProtocol,

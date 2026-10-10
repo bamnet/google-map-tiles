@@ -84,7 +84,6 @@ interface FakeSource {
   type: string;
   tiles?: string[];
   attribution?: string;
-  setTiles?(tiles: string[]): void;
 }
 
 interface FakeLayer {
@@ -152,25 +151,9 @@ export class FakeMap {
     return this.zoom;
   }
 
-  addSource(id: string, spec: FakeSource) {
-    const source: FakeSource = { ...spec };
-    source.setTiles = (tiles) => {
-      source.tiles = tiles;
-    };
-    this.sources[id] = source;
-  }
-  getLayer(id: string) {
-    return this.layers.find((l) => l.id === id);
-  }
   addLayer(layer: FakeLayer) {
     this.layers.push(layer);
     this.fire("styledata");
-  }
-  removeLayer(id: string) {
-    this.layers = this.layers.filter((l) => l.id !== id);
-  }
-  removeSource(id: string) {
-    delete this.sources[id];
   }
   controls: { onAdd(map: Map): unknown; onRemove(map: Map): void }[] = [];
   addControl(control: { onAdd(map: Map): unknown; onRemove(map: Map): void }) {

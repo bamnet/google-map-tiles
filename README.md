@@ -104,18 +104,6 @@ try {
 }
 ```
 
-### Deprecated: `addGoogleMapTiles()`
-
-`addGoogleMapTiles()` and `GoogleMapTilesSourceManager` still work, but are
-deprecated in favor of `GoogleMapTilesProtocol` and will be removed in a future
-release. To migrate, replace:
-
-```typescript
-await addGoogleMapTiles("YOUR_API_KEY", map, options);
-```
-
-with the protocol setup above, using `google.source(options)` for the source.
-
 ## 📐 With a MapLibre Style (MapLibre Native, Flutter, servers)
 
 Any MapLibre renderer can load a style. Build one, for example on a server, and

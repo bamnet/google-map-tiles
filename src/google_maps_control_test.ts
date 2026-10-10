@@ -1,13 +1,5 @@
-import {
-  afterEach,
-  beforeEach,
-  expect,
-  mock,
-  setSystemTime,
-  test,
-} from "bun:test";
+import { afterEach, beforeEach, expect, mock, test } from "bun:test";
 import { GoogleMapsControl } from "./google_maps_control.ts";
-import { addGoogleMapTiles } from "./maplibre_plugin.ts";
 import { SessionPool } from "./session_pool.ts";
 import type { SessionOptions } from "./tiles.ts";
 import { FakeMap, fakeDocument, mockTilesApi, settle } from "./test_helpers.ts";
@@ -21,7 +13,6 @@ const roadmap: SessionOptions = {
 beforeEach(fakeDocument);
 afterEach(() => {
   mock.restore();
-  setSystemTime();
 });
 
 /** A map with one Google source ("google") and one other ("other"). */
@@ -140,37 +131,6 @@ test("GoogleMapsControl - stops listening when removed", async () => {
   expect(map.listenerCount("moveend")).toBe(0);
   expect(map.listenerCount("styledata")).toBe(0);
   expect(fetchSpy.mock.calls.length).toBe(calls);
-});
-
-test("addGoogleMapTiles - points the source at a replaced session", async () => {
-  mockTilesApi();
-  const map = new FakeMap();
-  await addGoogleMapTiles("test-api-key", map.asMap(), roadmap);
-  await settle();
-  expect(map.sources["google-map-tiles"].tiles?.[0]).toContain(
-    "session=session-1",
-  );
-
-  setSystemTime(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)); // expired
-  map.fire("moveend");
-  await settle();
-
-  const source = map.sources["google-map-tiles"];
-  expect(source.tiles?.[0]).toContain("session=session-2");
-  expect(source.attribution).toBe("© session-2 z3");
-});
-
-test("addGoogleMapTiles - removeFromMap cleans up", async () => {
-  mockTilesApi();
-  const map = new FakeMap();
-  const manager = await addGoogleMapTiles("test-api-key", map.asMap(), roadmap);
-
-  manager.removeFromMap(map.asMap());
-
-  expect(map.sources).toEqual({});
-  expect(map.layers).toEqual([]);
-  expect(map.controls).toEqual([]);
-  expect(map.listenerCount("moveend")).toBe(0);
 });
 
 test("GoogleMapsControl - attributes a source replaced under the same id", async () => {
