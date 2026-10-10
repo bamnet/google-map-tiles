@@ -35,3 +35,32 @@ jobs:
           name: playwright-traces
           path: test-results/
           retention-days: 7
+
+  # The build job uses the newest maplibre-gl (kept current by Dependabot).
+  # This one checks the oldest version package.json says we support.
+  maplibre-minimum:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install the minimum supported maplibre-gl
+        run: |
+          MIN=$(jq -r '.peerDependencies["maplibre-gl"]' package.json | sed 's/^[\^~]//')
+          jq --arg v "$MIN" '.overrides["maplibre-gl"] = $v' package.json > package.json.tmp
+          mv package.json.tmp package.json
+          bun install
+          echo "Testing with maplibre-gl $(jq -r .version node_modules/maplibre-gl/package.json)"
+          test "$(jq -r .version node_modules/maplibre-gl/package.json)" = "$MIN"
+
+      - run: bun run check
+
+      - run: bun test
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - run: bunx playwright install --with-deps chromium
+
+      - run: bun run test:e2e
