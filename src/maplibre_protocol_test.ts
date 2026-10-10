@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, expect, mock, spyOn, test } from "bun:test";
 import type { AddProtocolAction } from "maplibre-gl";
 import {
   decodeTileUrl,
@@ -132,4 +132,33 @@ test("control - attributes protocol sources with the handler's session", async (
   expect(map.sources.other.attribution).toBeUndefined();
   const urls = fetchSpy.mock.calls.map(([url]) => String(url));
   expect(urls.filter((u) => u.includes("createSession"))).toHaveLength(1);
+});
+
+test("validate - creates the session once, reused for tiles", async () => {
+  const fetchSpy = mockTilesApi();
+  const google = new GoogleMapTilesProtocol("test-api-key");
+
+  await google.validate(roadmap);
+  await google.handler(
+    { url: tile(google.source(roadmap).tiles[0], 1, 2, 3) },
+    new AbortController(),
+  );
+
+  const urls = fetchSpy.mock.calls.map(([url]) => String(url));
+  expect(urls.filter((u) => u.includes("createSession"))).toHaveLength(1);
+});
+
+test("validate - rejects bad keys", async () => {
+  spyOn(globalThis, "fetch").mockImplementation((() =>
+    Promise.resolve(
+      Response.json(
+        { error: { message: "API key not valid." } },
+        { status: 400 },
+      ),
+    )) as unknown as typeof fetch);
+  const google = new GoogleMapTilesProtocol("bad-key");
+
+  await expect(google.validate(roadmap)).rejects.toThrow(
+    "Error creating session: API key not valid.",
+  );
 });

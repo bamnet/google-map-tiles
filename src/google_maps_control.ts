@@ -18,6 +18,7 @@ export type GoogleSourceResolver = (
 
 interface GoogleSourceRef {
   id: string;
+  tiles: string[];
   client: () => Promise<GoogleMapTiles>;
 }
 
@@ -36,6 +37,8 @@ export class GoogleMapsControl implements IControl {
   private container?: HTMLElement;
   private sources: GoogleSourceRef[] = [];
   private sourceKey = "";
+  /** The sourceKey a refresh is in flight for, if any. */
+  private pendingKey?: string;
   /** Incremented per refresh, so slower, older responses are discarded. */
   private generation = 0;
 
@@ -145,7 +148,7 @@ export class GoogleMapsControl implements IControl {
       if (!visible.has(id) || !("tiles" in spec) || !spec.tiles) continue;
       const client = this.resolve(id, spec.tiles);
       if (client) {
-        sources.push({ id, client });
+        sources.push({ id, tiles: spec.tiles, client });
       }
     }
 
@@ -153,11 +156,19 @@ export class GoogleMapsControl implements IControl {
     if (this.container) {
       this.container.style.display = sources.length ? "" : "none";
     }
-    // styledata fires often; only refresh when the set of sources changed.
-    const key = sources.map((s) => s.id).join("\n");
-    if (key !== this.sourceKey) {
+    // styledata fires often, so only refresh when a source was added,
+    // removed or changed, or has been replaced (e.g. by setStyle()) with one
+    // that hasn't been given attribution yet.
+    const key = JSON.stringify(sources.map(({ id, tiles }) => [id, tiles]));
+    const unattributed = sources.some(
+      ({ id }) => map.getSource(id)?.attribution === undefined,
+    );
+    if (key !== this.sourceKey || (unattributed && key !== this.pendingKey)) {
       this.sourceKey = key;
-      void this.refresh();
+      this.pendingKey = key;
+      void this.refresh().finally(() => {
+        if (this.pendingKey === key) this.pendingKey = undefined;
+      });
     }
   };
 }

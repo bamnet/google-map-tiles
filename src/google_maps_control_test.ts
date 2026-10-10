@@ -172,3 +172,40 @@ test("addGoogleMapTiles - removeFromMap cleans up", async () => {
   expect(map.controls).toEqual([]);
   expect(map.listenerCount("moveend")).toBe(0);
 });
+
+test("GoogleMapsControl - attributes a source replaced under the same id", async () => {
+  mockTilesApi();
+  const { map, control } = setup();
+  map.addControl(control);
+  await settle();
+
+  // What setStyle() does when a source's options change: same id, new source.
+  map.sources.google = {
+    type: "raster",
+    tiles: ["https://google/satellite/{z}/{x}/{y}"],
+  };
+  map.fire("styledata");
+  await settle();
+  expect(map.sources.google.attribution).toBe("© session-1 z3");
+
+  // Rebuilt with identical tiles (setStyle without diffing): still attributed.
+  map.sources.google = { ...map.sources.google, attribution: undefined };
+  map.fire("styledata");
+  await settle();
+  expect(map.sources.google.attribution).toBe("© session-1 z3");
+});
+
+test("GoogleMapsControl - one request while a style is loading", async () => {
+  const fetchSpy = mockTilesApi({ viewportDelayMs: () => 20 });
+  const { map, control } = setup();
+
+  map.addControl(control);
+  for (let i = 0; i < 5; i++) map.fire("styledata"); // still unattributed
+  await new Promise((r) => setTimeout(r, 50));
+
+  const viewports = fetchSpy.mock.calls.filter(([url]) =>
+    String(url).includes("viewport"),
+  );
+  expect(viewports).toHaveLength(1);
+  expect(map.sources.google.attribution).toBe("© session-1 z3");
+});

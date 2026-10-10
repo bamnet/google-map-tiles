@@ -84,6 +84,16 @@ export class GoogleMapTilesProtocol {
   };
 
   /**
+   * Creates the session for these options now, so that a bad API key or
+   * invalid options fail here, instead of as tile errors once the map loads.
+   * The session is then reused for tiles.
+   * @throws {Error} If the session can't be created
+   */
+  async validate(options: SessionOptions): Promise<void> {
+    await this.pool.client(options);
+  }
+
+  /**
    * Creates a raster source for a style. No request is made until the map
    * loads tiles, and the source contains no API key.
    */

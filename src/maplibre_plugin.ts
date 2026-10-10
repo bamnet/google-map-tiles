@@ -21,7 +21,8 @@ const SOURCE_NAME = "google-map-tiles";
  * Maps logo and attribution kept current. The session is replaced before it
  * expires, and the source's tile URLs are updated to match.
  *
- * To declare Google tiles in a style instead, see `GoogleMapTilesProtocol`.
+ * @deprecated Use `GoogleMapTilesProtocol`, which declares Google tiles as
+ * ordinary style sources. This class will be removed in a future release.
  *
  * @example
  * ```ts
@@ -125,6 +126,9 @@ export class GoogleMapTilesSourceManager {
 
 /**
  * Helper function to add Google Maps tiles to a MapLibre map.
+ *
+ * @deprecated Use `GoogleMapTilesProtocol`, which declares Google tiles as
+ * ordinary style sources. This function will be removed in a future release.
  */
 export async function addGoogleMapTiles(
   apiKey: string,
