@@ -218,22 +218,29 @@ Tiles API in the Google Cloud console.
 
 ## ⚙️ Configuration Options
 
-All modes take the same `SessionOptions`:
+All modes take the same `SessionOptions`. Fields with a fixed set of values
+accept either the enum (`MapType.Satellite`) or its string (`"satellite"`):
 
 ```typescript
 interface SessionOptions {
-  mapType: "roadmap" | "satellite" | "terrain" | "streetview";
-  language: string; // e.g., "en-US", "fr", "de"
-  region: string; // e.g., "us", "uk", "jp"
-  imageFormat?: string; // Optional image format
-  scale?: string; // Optional scale factor
-  highDpi?: boolean; // Optional high DPI support
-  layerTypes?: string[]; // Optional layer types
-  styles?: unknown[]; // Optional custom styles
-  overlay?: boolean; // Optional overlay mode
-  apiOptions?: string[]; // Optional API options
+  mapType: MapType; // "roadmap" | "satellite" | "terrain"
+  language: string; // IETF language tag, e.g. "en-US", "fr"
+  region: string; // CLDR region, e.g. "US", "JP"
+  imageFormat?: ImageFormat; // "png" | "jpeg"; chosen automatically if omitted
+  scale?: Scale; // "scaleFactor1x" (default) | "scaleFactor2x" | "scaleFactor4x"
+  highDpi?: boolean; // high-resolution tiles; needs a 2x or 4x scale
+  layerTypes?: LayerType[]; // "layerRoadmap" | "layerStreetview" | "layerTraffic"
+  styles?: unknown[]; // map styling; roadmap only
+  overlay?: boolean; // render layerTypes without the base map
+  apiOptions?: string[];
 }
 ```
+
+A few combinations are required by the API: `terrain` needs the
+`layerRoadmap` layer type, and `styles` only applies to `roadmap`. JPEG has no
+transparency, so prefer PNG for overlays. See Google's
+[session options](https://developers.google.com/maps/documentation/tile/session_tokens)
+for details.
 
 `GoogleMapTiles` and the `/core` helpers also accept a `baseUrl` option to
 change the API host.

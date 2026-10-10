@@ -7,7 +7,7 @@ import {
 } from "./google_maps_control.ts";
 import { type RasterSource, TILE_SIZE } from "./maplibre_style.ts";
 import { SessionPool, type SessionPoolOptions } from "./session_pool.ts";
-import type { LayerType, SessionOptions } from "./tiles.ts";
+import type { SessionOptions } from "./tiles.ts";
 
 /** Options for constructing a {@link GoogleMapTilesProtocol}. */
 export interface ProtocolOptions extends SessionPoolOptions {
@@ -170,10 +170,11 @@ export function decodeTileUrl(
     mapType: parsed.hostname as SessionOptions["mapType"],
     language: params.get("language") ?? "",
     region: params.get("region") ?? "",
-    imageFormat: params.get("imageFormat") ?? undefined,
-    scale: params.get("scale") ?? undefined,
+    imageFormat: (params.get("imageFormat") ??
+      undefined) as SessionOptions["imageFormat"],
+    scale: (params.get("scale") ?? undefined) as SessionOptions["scale"],
     highDpi: bool("highDpi"),
-    layerTypes: list("layerTypes") as LayerType[] | undefined,
+    layerTypes: list("layerTypes") as SessionOptions["layerTypes"],
     overlay: bool("overlay"),
     apiOptions: list("apiOptions"),
     styles: params.has("styles")
