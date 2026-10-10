@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { afterEach, expect, mock, spyOn, test } from "bun:test";
 import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
 
 // Mock responses
@@ -23,6 +23,21 @@ const mockViewportResponse = {
     },
   ],
 };
+
+afterEach(() => {
+  mock.restore();
+});
+
+/**
+ * Replaces fetch with one that returns a successful session response. The
+ * cast is needed because Bun's fetch type also requires `preconnect`.
+ */
+function mockSession() {
+  return spyOn(globalThis, "fetch").mockImplementation((() =>
+    Promise.resolve(
+      Response.json(mockSessionResponse),
+    )) as unknown as typeof fetch);
+}
 
 // Setup and teardown utilities
 function createTestContext() {
@@ -197,9 +212,8 @@ test("GoogleMapTiles - tileUrl", async () => {
 });
 
 test("GoogleMapTiles - expiresAt and isExpiring", async () => {
-  const client = new GoogleMapTiles("test-api-key", {
-    fetch: () => Promise.resolve(Response.json(mockSessionResponse)),
-  });
+  mockSession();
+  const client = new GoogleMapTiles("test-api-key");
   expect(client.expiresAt()).toBeNull();
   expect(client.isExpiring()).toBe(true);
 
@@ -218,13 +232,8 @@ test("GoogleMapTiles - expiresAt and isExpiring", async () => {
 });
 
 test("GoogleMapTiles - refreshSession reuses the last options", async () => {
-  const bodies: unknown[] = [];
-  const client = new GoogleMapTiles("test-api-key", {
-    fetch: (_url, init) => {
-      bodies.push(JSON.parse(init?.body as string));
-      return Promise.resolve(Response.json(mockSessionResponse));
-    },
-  });
+  const fetchSpy = mockSession();
+  const client = new GoogleMapTiles("test-api-key");
   const options: SessionOptions = {
     mapType: MapType.Terrain,
     language: "fr",
@@ -234,6 +243,9 @@ test("GoogleMapTiles - refreshSession reuses the last options", async () => {
   await client.createSession(options);
   await client.refreshSession();
 
+  const bodies = fetchSpy.mock.calls.map(([, init]) =>
+    JSON.parse(init?.body as string),
+  );
   expect(bodies).toEqual([options, options]);
 });
 
@@ -242,14 +254,10 @@ test("GoogleMapTiles - refreshSession requires a session", async () => {
   await expect(client.refreshSession()).rejects.toThrow("Session not created");
 });
 
-test("GoogleMapTiles - uses fetch and baseUrl options", async () => {
-  const urls: string[] = [];
+test("GoogleMapTiles - uses the baseUrl option", async () => {
+  const fetchSpy = mockSession();
   const client = new GoogleMapTiles("test-api-key", {
     baseUrl: "https://tiles.example.com",
-    fetch: (url) => {
-      urls.push(url);
-      return Promise.resolve(Response.json(mockSessionResponse));
-    },
   });
 
   await client.createSession({
@@ -258,7 +266,7 @@ test("GoogleMapTiles - uses fetch and baseUrl options", async () => {
     region: "us",
   });
 
-  expect(urls).toEqual([
+  expect(fetchSpy.mock.calls.map(([url]) => url)).toEqual([
     "https://tiles.example.com/v1/createSession?key=test-api-key",
   ]);
   expect(client.tileUrlTemplate()).toStartWith(

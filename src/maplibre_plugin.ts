@@ -1,5 +1,5 @@
 import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
-import { DEFAULT_ATTRIBUTION, TILE_SIZE } from "./source.ts";
+import { TILE_SIZE } from "./source.ts";
 // Only types are imported from maplibre-gl, so this module works with
 // whichever maplibre-gl instance the application uses.
 import type {
@@ -93,7 +93,6 @@ export class GoogleMapTilesSourceManager {
       type: "raster",
       tiles: [this.tileUrl],
       tileSize: TILE_SIZE,
-      attribution: DEFAULT_ATTRIBUTION,
     });
     map.addLayer({
       id: LAYER_NAME,
@@ -136,9 +135,7 @@ export class GoogleMapTilesSourceManager {
       );
 
       if (this.source) {
-        // The API returns an empty copyright for some viewports, such as
-        // satellite imagery at certain zooms. Always credit Google.
-        this.source.attribution = viewport.copyright || DEFAULT_ATTRIBUTION;
+        this.source.attribution = viewport.copyright;
       }
     } catch (error) {
       console.warn("Failed to update attribution:", error);

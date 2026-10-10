@@ -13,7 +13,6 @@ export {
 } from "./src/tiles.ts";
 export type {
   ClientOptions,
-  FetchLike,
   SessionOptions,
   SessionResponse,
   ViewportResponse,
@@ -23,7 +22,6 @@ export type {
 export {
   createGoogleSource,
   createGoogleStyle,
-  DEFAULT_ATTRIBUTION,
   TILE_SIZE,
 } from "./src/source.ts";
 export type {

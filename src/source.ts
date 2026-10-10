@@ -6,14 +6,6 @@ import {
 } from "./tiles.ts";
 
 /**
- * Attribution used until a viewport-specific attribution is fetched, and when
- * the API returns none. Google's policies ask new integrations to use
- * "Google Maps" rather than "Google":
- * https://developers.google.com/maps/documentation/tile/policies
- */
-export const DEFAULT_ATTRIBUTION = "Google Maps";
-
-/**
  * Tile size, in CSS pixels, for Google 2D tiles. Tiles use the standard
  * 256px Web Mercator grid; high-DPI sessions return 512px images for the
  * same tiles, which MapLibre renders at this size.
@@ -51,8 +43,9 @@ export interface Style {
 /** Options for {@link createGoogleSource}. */
 export interface SourceOptions extends ClientOptions {
   /**
-   * Initial attribution text for the source.
-   * @default DEFAULT_ATTRIBUTION
+   * Attribution text for the source. Google's policies require showing the
+   * `copyright` from {@link GoogleMapTiles.getViewport} for the visible area,
+   * which changes as the map moves; see the README.
    */
   attribution?: string;
 }
@@ -93,7 +86,7 @@ export async function createGoogleSource(
       type: "raster",
       tiles: [client.tileUrlTemplate()],
       tileSize: TILE_SIZE,
-      attribution: sourceOptions.attribution ?? DEFAULT_ATTRIBUTION,
+      attribution: sourceOptions.attribution,
     },
     session,
     expiresAt: client.expiresAt() as Date,

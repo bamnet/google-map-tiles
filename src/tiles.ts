@@ -88,16 +88,8 @@ export interface SessionResponse {
   imageFormat: string;
 }
 
-/** The subset of `fetch` the client uses. */
-export type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
-
 /** Options for constructing a {@link GoogleMapTiles} client. */
 export interface ClientOptions {
-  /**
-   * The fetch implementation to use for API requests.
-   * @default globalThis.fetch
-   */
-  fetch?: FetchLike;
   /**
    * Base URL for API and tile requests.
    * @default "https://tile.googleapis.com"
@@ -119,7 +111,6 @@ export class GoogleMapTiles {
   session: SessionResponse | null = null;
 
   private sessionOptions: SessionOptions | null = null;
-  private readonly fetchFn: FetchLike;
   private readonly baseUrl: string;
 
   /**
@@ -129,9 +120,6 @@ export class GoogleMapTiles {
    */
   constructor(apiKey: string, options: ClientOptions = {}) {
     this.apiKey = apiKey;
-    // Resolve globalThis.fetch at call time so it is never invoked with the
-    // wrong `this` and can be replaced after construction.
-    this.fetchFn = options.fetch ?? ((url, init) => fetch(url, init));
     this.baseUrl = options.baseUrl ?? API_BASE_URL;
   }
 
@@ -143,7 +131,7 @@ export class GoogleMapTiles {
    */
   async createSession(request: SessionOptions): Promise<SessionResponse> {
     const url = `${this.baseUrl}/v1/createSession?key=${this.apiKey}`;
-    const response = await this.fetchFn(url, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -216,7 +204,7 @@ export class GoogleMapTiles {
     }
 
     const url = `${this.baseUrl}/tile/v1/viewport?session=${this.session.session}&key=${this.apiKey}&zoom=${zoom}&north=${north}&south=${south}&east=${east}&west=${west}`;
-    const response = await this.fetchFn(url);
+    const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`Error fetching viewport: ${response.statusText}`);
