@@ -1,6 +1,6 @@
 /**
- * The MapLibre-independent core: the Tile API client and helpers that build
- * plain MapLibre source and style JSON. Runs anywhere `fetch` is available,
+ * The MapLibre-independent core: the Tile API client, a session pool, and
+ * helpers that build plain MapLibre source and style JSON. Runs anywhere `fetch` is available,
  * including servers, and does not require maplibre-gl.
  *
  * @module
@@ -18,6 +18,9 @@ export type {
   ViewportResponse,
   ZoomRectangle,
 } from "./src/tiles.ts";
+
+export { SessionPool, sessionKey } from "./src/session_pool.ts";
+export type { SessionPoolOptions } from "./src/session_pool.ts";
 
 export {
   createGoogleSource,

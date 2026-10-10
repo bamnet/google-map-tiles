@@ -132,15 +132,18 @@ In this mode, your app is responsible for:
 
 ## 🧩 Without MapLibre
 
-Use the `GoogleMapTiles` client to manage sessions, build tile URLs and fetch
-attribution for whatever draws your map. A client holds one session, so create
-one client per map type:
+Use a `SessionPool` to get a client with a current session for each set of
+options, then build tile URLs and fetch attribution for whatever draws your
+map:
 
 ```typescript
-import { GoogleMapTiles } from "@bamnet/google-map-tiles/core";
+import { SessionPool } from "@bamnet/google-map-tiles/core";
 
-const client = new GoogleMapTiles("YOUR_API_KEY");
-await client.createSession({
+const pool = new SessionPool("YOUR_API_KEY");
+
+// The first call creates a session; later calls with the same options reuse
+// it, and it's replaced automatically shortly before it expires.
+const client = await pool.client({
   mapType: "roadmap",
   language: "en-US",
   region: "us",
@@ -154,12 +157,15 @@ const template = client.tileUrlTemplate();
 
 // Attribution for what's on screen: zoom, then north, south, east, west
 const { copyright } = await client.getViewport(15, 40.8, 40.7, -73.9, -74.0);
-
-// Sessions expire; refresh before then
-if (client.isExpiring()) {
-  await client.refreshSession();
-}
 ```
+
+Call `pool.client()` whenever you need tiles rather than keeping the client,
+so you always get a current session. Concurrent calls share one request, and a
+failed request isn't cached, so the next call retries.
+
+To manage a single session yourself, use `GoogleMapTiles` directly:
+`createSession()`, then `isExpiring()` and `refreshSession()` to keep it
+current.
 
 ## ©️ Attribution
 
