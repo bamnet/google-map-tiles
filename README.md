@@ -196,14 +196,22 @@ style). With `/core`, your app is responsible for implementing this.
 
 The logo itself is included, since Google doesn't host it at a stable URL:
 
-- **In code:** `GOOGLE_MAPS_LOGO` from `@bamnet/google-map-tiles/core` has both
-  outlined variants as SVG markup and `data:` URIs, plus the required display
-  height (16–19px), clear space and accessible label.
+- **In code:** `GOOGLE_MAPS_LOGO` from `@bamnet/google-map-tiles/core` has
+  every variant as SVG markup and a `data:` URI, plus the required display
+  height (16–19px), clear space and accessible label. Google calls for the
+  outlined logo over the map, and the non-outlined one on a plain background:
+
+  | Where the logo sits | Variant |
+  |---|---|
+  | Over a light map, e.g. roadmap | `light` (outlined) |
+  | Over a dark map, e.g. satellite | `dark` (outlined) |
+  | On a plain light background | `gray` or `darkGray` |
+  | On a plain dark background | `white` |
 
   ```typescript
   import { GOOGLE_MAPS_LOGO } from "@bamnet/google-map-tiles/core";
 
-  img.src = GOOGLE_MAPS_LOGO.light.dataUri; // .dark over satellite imagery
+  img.src = GOOGLE_MAPS_LOGO.light.dataUri;
   img.alt = GOOGLE_MAPS_LOGO.alt;
   ```
 

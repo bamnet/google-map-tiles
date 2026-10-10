@@ -26,10 +26,11 @@ test("google_logo_data.ts is up to date with the assets", async () => {
 });
 
 test("compactSvg leaves the logo itself unchanged", async () => {
-  for (const file of [
-    "GoogleMaps_Logo_WithLightOutline.svg",
-    "GoogleMaps_Logo_WithDarkOutline.svg",
-  ]) {
+  const files = await Array.fromAsync(
+    new Bun.Glob("*.svg").scan({ cwd: ASSETS.pathname }),
+  );
+  expect(files).toHaveLength(5);
+  for (const file of files) {
     const raw = await Bun.file(new URL(file, ASSETS)).text();
     // Only the XML declaration and comments are expected to go.
     const original = raw
@@ -44,19 +45,33 @@ test("compactSvg leaves the logo itself unchanged", async () => {
   }
 });
 
+const VARIANTS = ["light", "dark", "gray", "darkGray", "white"] as const;
+
 test("GOOGLE_MAPS_LOGO - data URIs decode to the SVGs", () => {
-  for (const variant of ["light", "dark"] as const) {
+  for (const variant of VARIANTS) {
     const { svg, dataUri } = GOOGLE_MAPS_LOGO[variant];
     expect(dataUri.startsWith("data:image/svg+xml,")).toBe(true);
     expect(decodeURIComponent(dataUri.slice(dataUri.indexOf(",") + 1))).toBe(
       svg,
     );
     expect(svg).toStartWith("<svg");
-    expect(svg).toContain('viewBox="0 0 105 22"');
   }
-  // Light: dark gray text. Dark: white text on a dark outline.
+  // Outlined: dark gray text, or white text on a dark outline.
   expect(GOOGLE_MAPS_LOGO.light.svg).toContain("#474747");
   expect(GOOGLE_MAPS_LOGO.dark.svg).toContain("#1E1E1E");
+  // Not outlined: one color each.
+  expect(GOOGLE_MAPS_LOGO.gray.svg).toContain('fill="#5E5E5E"');
+  expect(GOOGLE_MAPS_LOGO.darkGray.svg).toContain('fill="#1F1F1F"');
+  expect(GOOGLE_MAPS_LOGO.white.svg).toContain('fill="#FFFFFF"');
+});
+
+test("GOOGLE_MAPS_LOGO - sizes match the SVGs", () => {
+  for (const variant of VARIANTS) {
+    const { svg, width, height } = GOOGLE_MAPS_LOGO[variant];
+    expect(svg).toContain(`viewBox="0 0 ${width} ${height}"`);
+  }
+  expect(GOOGLE_MAPS_LOGO.light.width).toBe(105);
+  expect(GOOGLE_MAPS_LOGO.white.width).toBe(98);
 });
 
 test("createGoogleLogo - sized and spaced per Google's requirements", () => {
@@ -67,5 +82,6 @@ test("createGoogleLogo - sized and spaced per Google's requirements", () => {
   expect(img.height).toBeGreaterThanOrEqual(GOOGLE_MAPS_LOGO.minHeight);
   expect(img.height).toBeLessThanOrEqual(GOOGLE_MAPS_LOGO.maxHeight);
   expect(img.width / img.height).toBeCloseTo(105 / 22, 1);
+  expect(img.width).toBe(86);
   expect(img.style.margin).toBe("10px 10px 5px 10px");
 });

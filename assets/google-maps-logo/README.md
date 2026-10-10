@@ -2,19 +2,22 @@
 
 The Google Maps logo, as required by the
 [Map Tiles API policies](https://developers.google.com/maps/documentation/tile/policies)
-wherever Google tiles are shown. These are the two outlined variants from
-Google's
+wherever Google tiles are shown. These are the files from Google's
 [attribution assets](https://developers.google.com/static/maps/documentation/images/Google_Maps_Attribution_Assets.zip),
-unmodified:
+unmodified. Google calls for the outlined logo on a busy background, like the
+map, and the non-outlined logo on a plain background, like a solid color:
 
 | File | Use on |
 |---|---|
 | `GoogleMaps_Logo_WithLightOutline*` (dark text, light outline) | Light maps, e.g. roadmap and terrain |
 | `GoogleMaps_Logo_WithDarkOutline*` (light text, dark outline) | Dark maps, e.g. satellite imagery |
+| `GoogleMaps_Logo_Gray*`, `GoogleMaps_Logo_DarkGray*` | Plain light backgrounds |
+| `GoogleMaps_Logo_White*` | Plain dark backgrounds |
 
-Each is provided as SVG and as PNG at 1x (105×22), 2x and 4x. Display the logo
-16–19px tall, with 10px of clear space on the left, right and top and 5px at
-the bottom, and label it "Google Maps" for accessibility.
+Each is provided as SVG and as PNG at 1x, 2x and 4x. The outlined logos are
+105×22 at 1x, and the others 98×18. Display the logo 16–19px tall, with 10px
+of clear space on the left, right and top and 5px at the bottom, keep enough
+contrast with the background, and label it "Google Maps" for accessibility.
 
 `GoogleMapsControl` shows the right variant automatically, and the SVGs are
 also exported as `GOOGLE_MAPS_LOGO` from `@bamnet/google-map-tiles/core`. To
