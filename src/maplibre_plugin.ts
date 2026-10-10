@@ -136,7 +136,9 @@ export class GoogleMapTilesSourceManager {
       );
 
       if (this.source) {
-        this.source.attribution = viewport.copyright;
+        // The API returns an empty copyright for some viewports, such as
+        // satellite imagery at certain zooms. Always credit Google.
+        this.source.attribution = viewport.copyright || DEFAULT_ATTRIBUTION;
       }
     } catch (error) {
       console.warn("Failed to update attribution:", error);
