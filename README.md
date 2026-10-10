@@ -36,6 +36,8 @@ npx jsr add @bamnet/google-map-tiles
 yarn add jsr:@bamnet/google-map-tiles
 ```
 
+Requires `maplibre-gl` 6.4.1 or later.
+
 ## 🚀 Quick Start
 
 ```typescript
