@@ -1,9 +1,10 @@
-# 🗺️ Google Map Tiles for MapLibre GL
+# 🗺️ Google Map Tiles
 
-A TypeScript library that enables the use of
-[Google Map Tiles](https://developers.google.com/maps/documentation/tile) API in
-MapLibre GL JS applications. It provides session handling, attribution, and
-various map configurations.
+A TypeScript library for the
+[Google Map Tiles API](https://developers.google.com/maps/documentation/tile).
+It adds Google tiles to MapLibre GL JS in one call, with attribution and the
+Google Maps logo handled for you. Its dependency-free core also builds MapLibre
+styles for MapLibre Native and Flutter, and works with no map library at all.
 
 Demo @ https://bamnet.github.io/google-map-tiles/
 
@@ -13,6 +14,8 @@ Demo @ https://bamnet.github.io/google-map-tiles/
 ## ✨ Features
 
 - 🌍 Easy integration with MapLibre GL JS
+- 📐 MapLibre styles for MapLibre Native, Flutter and servers
+- 🧩 A dependency-free API client for any other renderer
 - 🗺️ Support for different map types (roadmap, satellite, terrain)
 - 🌐 Customizable language and region settings
 - 🔄 Automatic session management
@@ -168,7 +171,8 @@ require two things wherever tiles are shown:
   by `getViewport()`, shown in full as provided, usually in the bottom right.
   It changes as the map moves, so fetch it again when the view changes.
 
-`addGoogleMapTiles()` does both. With `/core`, your app does.
+`addGoogleMapTiles()` does both. With `/core`, your app is responsible for
+implementing this.
 
 Tile URLs from every mode include your API key. Restrict the key to the Map
 Tiles API in the Google Cloud console.

@@ -1,5 +1,5 @@
 import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
-import { TILE_SIZE } from "./source.ts";
+import { TILE_SIZE } from "./maplibre_style.ts";
 // Only types are imported from maplibre-gl, so this module works with
 // whichever maplibre-gl instance the application uses.
 import type {

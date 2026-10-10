@@ -23,7 +23,7 @@ export {
   createGoogleSource,
   createGoogleStyle,
   TILE_SIZE,
-} from "./src/source.ts";
+} from "./src/maplibre_style.ts";
 export type {
   GoogleSource,
   RasterLayer,
@@ -31,4 +31,4 @@ export type {
   SourceOptions,
   Style,
   StyleOptions,
-} from "./src/source.ts";
+} from "./src/maplibre_style.ts";

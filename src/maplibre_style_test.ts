@@ -1,5 +1,5 @@
 import { afterEach, expect, mock, spyOn, test } from "bun:test";
-import { createGoogleSource, createGoogleStyle } from "./source.ts";
+import { createGoogleSource, createGoogleStyle } from "./maplibre_style.ts";
 import { MapType, type SessionOptions } from "./tiles.ts";
 
 const mockSessionResponse = {
