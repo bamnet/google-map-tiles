@@ -16,3 +16,5 @@ jobs:
       - run: bun run check
 
       - run: bun test
+
+      - run: bun run examples:build

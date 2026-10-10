@@ -2,11 +2,19 @@
   "name": "@bamnet/google-map-tiles",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./mod.ts"
+  },
+  "workspaces": [
+    "examples"
+  ],
   "scripts": {
     "test": "bun test",
     "check": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
     "lint": "biome lint .",
-    "fmt": "biome format --write ."
+    "fmt": "biome format --write .",
+    "examples:dev": "bun run --cwd examples dev",
+    "examples:build": "bun run --cwd examples build"
   },
   "peerDependencies": {
     "maplibre-gl": "^5.4.0"
