@@ -16,7 +16,8 @@
     "fmt": "biome format --write .",
     "examples:dev": "bun run --cwd examples dev",
     "examples:build": "bun run --cwd examples build",
-    "smoke:node": "node --experimental-transform-types --no-warnings scripts/node_smoke.mjs"
+    "smoke:node": "node --experimental-transform-types --no-warnings scripts/node_smoke.mjs",
+    "generate:logo": "bun scripts/generate_logo.ts"
   },
   "peerDependencies": {
     "maplibre-gl": "^6.4.1"

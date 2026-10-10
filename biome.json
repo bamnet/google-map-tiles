@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!examples"]
+    "includes": ["**", "!examples", "!src/google_logo_data.ts", "!assets"]
   },
   "formatter": {
     "indentStyle": "space",

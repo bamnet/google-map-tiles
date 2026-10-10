@@ -1,7 +1,10 @@
 // Only types are imported from maplibre-gl, so this module works with
 // whichever maplibre-gl instance the application uses.
 import type { GetResourceResponse, RequestParameters } from "maplibre-gl";
-import { GoogleMapsControl } from "./google_maps_control.ts";
+import {
+  GoogleMapsControl,
+  type GoogleMapsControlOptions,
+} from "./google_maps_control.ts";
 import { type RasterSource, TILE_SIZE } from "./maplibre_style.ts";
 import { SessionPool, type SessionPoolOptions } from "./session_pool.ts";
 import type { LayerType, SessionOptions } from "./tiles.ts";
@@ -110,13 +113,13 @@ export class GoogleMapTilesProtocol {
    * current for every source this protocol serves. Add it with
    * `map.addControl()`.
    */
-  control(): GoogleMapsControl {
+  control(options?: GoogleMapsControlOptions): GoogleMapsControl {
     return new GoogleMapsControl((_id, tiles) => {
       const url = tiles.find((t) => t.startsWith(`${this.scheme}://`));
       if (!url) return undefined;
-      const { options } = decodeTileUrl(url, this.scheme);
-      return () => this.pool.client(options);
-    });
+      const session = decodeTileUrl(url, this.scheme).options;
+      return () => this.pool.client(session);
+    }, options);
   }
 }
 

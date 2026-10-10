@@ -188,8 +188,30 @@ require two things wherever tiles are shown:
   by `getViewport()`, shown in full as provided, usually in the bottom right.
   It changes as the map moves, so fetch it again when the view changes.
 
-`google.control()` does both. With `/core`, your app is responsible for
-implementing this.
+`google.control()` does both, picking the logo variant that suits the imagery
+(`google.control({ logo: "dark" })` to override it, e.g. for a dark custom
+style). With `/core`, your app is responsible for implementing this.
+
+The logo itself is included, since Google doesn't host it at a stable URL:
+
+- **In code:** `GOOGLE_MAPS_LOGO` from `@bamnet/google-map-tiles/core` has both
+  outlined variants as SVG markup and `data:` URIs, plus the required display
+  height (16–19px), clear space and accessible label.
+
+  ```typescript
+  import { GOOGLE_MAPS_LOGO } from "@bamnet/google-map-tiles/core";
+
+  img.src = GOOGLE_MAPS_LOGO.light.dataUri; // .dark over satellite imagery
+  img.alt = GOOGLE_MAPS_LOGO.alt;
+  ```
+
+- **As files:** the package includes the SVGs and 1x/2x/4x PNGs in
+  `assets/google-maps-logo/`, e.g. to bundle in a MapLibre Native or Flutter
+  app. They're also downloadable from JSR at
+  `https://jsr.io/@bamnet/google-map-tiles/<version>/assets/google-maps-logo/`.
+
+The Google Maps logo is a trademark of Google LLC, included only for the
+attribution Google requires. It is not covered by this project's license.
 
 Tile requests in every mode include your API key. Restrict the key to the Map
 Tiles API in the Google Cloud console.
