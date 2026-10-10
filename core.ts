@@ -22,6 +22,9 @@ export type {
   ZoomRectangle,
 } from "./src/tiles.ts";
 
+export { TilesApiError } from "./src/errors.ts";
+export type { GoogleApiErrorBody } from "./src/errors.ts";
+
 export { SessionPool, sessionKey } from "./src/session_pool.ts";
 export type { SessionPoolOptions } from "./src/session_pool.ts";
 

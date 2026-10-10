@@ -159,6 +159,6 @@ test("validate - rejects bad keys", async () => {
   const google = new GoogleMapTilesProtocol("bad-key");
 
   await expect(google.validate(roadmap)).rejects.toThrow(
-    "Error creating session: API key not valid.",
+    "Error creating session: 400 API key not valid.",
   );
 });

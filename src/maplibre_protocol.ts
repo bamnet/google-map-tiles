@@ -1,6 +1,7 @@
 // Only types are imported from maplibre-gl, so this module works with
 // whichever maplibre-gl instance the application uses.
 import type { GetResourceResponse, RequestParameters } from "maplibre-gl";
+import { tilesApiError } from "./errors.ts";
 import {
   GoogleMapsControl,
   type GoogleMapsControlOptions,
@@ -75,9 +76,7 @@ export class GoogleMapTilesProtocol {
       signal: abortController.signal,
     });
     if (!response.ok) {
-      throw new Error(
-        `Error fetching tile ${z}/${x}/${y}: ${response.status} ${response.statusText}`,
-      );
+      throw await tilesApiError(response, `Error fetching tile ${z}/${x}/${y}`);
     }
     return {
       data: await response.arrayBuffer(),
@@ -90,7 +89,7 @@ export class GoogleMapTilesProtocol {
    * Creates the session for these options now, so that a bad API key or
    * invalid options fail here, instead of as tile errors once the map loads.
    * The session is then reused for tiles.
-   * @throws {Error} If the session can't be created
+   * @throws {TilesApiError} If the API rejects the session
    */
   async validate(options: SessionOptions): Promise<void> {
     await this.pool.client(options);

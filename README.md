@@ -97,12 +97,28 @@ catch them up front, validate the options first. The session is then reused
 for tiles:
 
 ```typescript
+import { TilesApiError } from "@bamnet/google-map-tiles";
+
 try {
   await google.validate({ mapType: "roadmap", language: "en-US", region: "us" });
 } catch (error) {
-  // e.g. "Error creating session: API key not valid."
+  if (error instanceof TilesApiError && error.reason === "API_KEY_INVALID") {
+    // Ask for a different key.
+  }
 }
 ```
+
+Errors from the Map Tiles API are thrown as `TilesApiError`s, from
+`validate()`, `createSession()`, `getViewport()` and the protocol handler,
+whose errors MapLibre reports in the map's `error` event. Each has:
+
+- `status`: the HTTP status, e.g. 400 for a bad key or invalid options, 401
+  for an invalid or expired session, or 404 for a tile that doesn't exist;
+- `reason`: Google's reason, e.g. `"API_KEY_INVALID"`, or `"badRequest"` for
+  invalid options such as terrain without the roads layer;
+- `body`: Google's full error response;
+- `message`: Google's description, e.g. `Error creating session: 400 The
+  terrain map type must always contain a roadmap layer`.
 
 ## 📐 With a MapLibre Style (MapLibre Native, Flutter, servers)
 

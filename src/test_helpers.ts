@@ -45,10 +45,18 @@ export function fakeTilesApi({
     }
     if (url.pathname.startsWith("/v1/2dtiles/")) {
       if (tileStatus !== 200) {
-        return new Response("", {
-          status: tileStatus,
-          statusText: "Not Found",
-        });
+        return Response.json(
+          {
+            error: {
+              code: tileStatus,
+              message: "Not Found",
+              errors: [
+                { message: "Not Found", domain: "global", reason: "notFound" },
+              ],
+            },
+          },
+          { status: tileStatus },
+        );
       }
       return new Response(new Uint8Array([1, 2, 3]), {
         headers: { "cache-control": "max-age=60" },

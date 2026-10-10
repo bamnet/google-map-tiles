@@ -56,7 +56,7 @@ export class SessionPool {
   /**
    * Returns a client with a current session for these options, creating or
    * replacing the session if needed.
-   * @throws {Error} If a session has to be created and creation fails
+   * @throws {TilesApiError} If a session has to be created and the API rejects it
    */
   async client(options: SessionOptions): Promise<GoogleMapTiles> {
     const key = sessionKey(options);
