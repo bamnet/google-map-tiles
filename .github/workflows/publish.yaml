@@ -17,6 +17,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
 
       - name: Publish package
-        run: npx jsr publish
+        run: bunx jsr publish

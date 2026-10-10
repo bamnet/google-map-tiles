@@ -1,0 +1,20 @@
+{
+  "name": "@bamnet/google-map-tiles",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "check": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "lint": "biome lint .",
+    "fmt": "biome format --write ."
+  },
+  "peerDependencies": {
+    "maplibre-gl": "^5.4.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/bun": "^1.4.2",
+    "maplibre-gl": "^5.4.0",
+    "typescript": "^7.0.2"
+  }
+}

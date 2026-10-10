@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "@std/assert";
+import { expect, test } from "bun:test";
 import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
 
 // Mock responses
@@ -29,17 +29,17 @@ function createTestContext() {
       globalThis.fetch = originalFetch;
     },
     mockFetch: (response: unknown, ok = true) => {
-      globalThis.fetch = () =>
+      globalThis.fetch = (() =>
         Promise.resolve({
           ok,
           json: () => Promise.resolve(response),
           statusText: ok ? "OK" : "Error",
-        } as Response);
+        } as Response)) as unknown as typeof fetch;
     },
   };
 }
 
-Deno.test("GoogleMapTiles - createSession", async () => {
+test("GoogleMapTiles - createSession", async () => {
   const ctx = createTestContext();
   ctx.mockFetch(mockSessionResponse);
 
@@ -53,13 +53,13 @@ Deno.test("GoogleMapTiles - createSession", async () => {
     };
 
     const session = await googleMapTiles.createSession(sessionRequest);
-    assertEquals(session, mockSessionResponse);
+    expect(session).toEqual(mockSessionResponse);
   } finally {
     ctx.cleanup();
   }
 });
 
-Deno.test("GoogleMapTiles - createSession failure", async () => {
+test("GoogleMapTiles - createSession failure", async () => {
   const ctx = createTestContext();
   ctx.mockFetch({
     error: {
@@ -84,11 +84,7 @@ Deno.test("GoogleMapTiles - createSession failure", async () => {
       region: "us",
     };
 
-    await assertRejects(
-      async () => {
-        await googleMapTiles.createSession(sessionRequest);
-      },
-      Error,
+    await expect(googleMapTiles.createSession(sessionRequest)).rejects.toThrow(
       "Error creating session: Requests from referer https://test/ are blocked.",
     );
   } finally {
@@ -96,7 +92,7 @@ Deno.test("GoogleMapTiles - createSession failure", async () => {
   }
 });
 
-Deno.test("GoogleMapTiles - getViewport", async () => {
+test("GoogleMapTiles - getViewport", async () => {
   const ctx = createTestContext();
   ctx.mockFetch(mockSessionResponse);
 
@@ -113,13 +109,13 @@ Deno.test("GoogleMapTiles - getViewport", async () => {
 
     ctx.mockFetch(mockViewportResponse);
     const viewport = await googleMapTiles.getViewport(10, 40, 30, -70, -80);
-    assertEquals(viewport, mockViewportResponse);
+    expect(viewport).toEqual(mockViewportResponse);
   } finally {
     ctx.cleanup();
   }
 });
 
-Deno.test("GoogleMapTiles - getViewport failure", async () => {
+test("GoogleMapTiles - getViewport failure", async () => {
   const ctx = createTestContext();
   ctx.mockFetch(mockSessionResponse);
 
@@ -135,11 +131,7 @@ Deno.test("GoogleMapTiles - getViewport failure", async () => {
     await googleMapTiles.createSession(sessionRequest);
 
     ctx.mockFetch({}, false);
-    await assertRejects(
-      async () => {
-        await googleMapTiles.getViewport(10, 40, 30, -70, -80);
-      },
-      Error,
+    await expect(googleMapTiles.getViewport(10, 40, 30, -70, -80)).rejects.toThrow(
       "Error fetching viewport",
     );
   } finally {
@@ -147,7 +139,7 @@ Deno.test("GoogleMapTiles - getViewport failure", async () => {
   }
 });
 
-Deno.test("GoogleMapTiles - tileJSONUrl", async () => {
+test("GoogleMapTiles - tileJSONUrl", async () => {
   const ctx = createTestContext();
   ctx.mockFetch(mockSessionResponse);
 
@@ -164,15 +156,15 @@ Deno.test("GoogleMapTiles - tileJSONUrl", async () => {
 
     const tileJSONUrl = googleMapTiles.tileJSONUrl();
 
-    assertEquals(tileJSONUrl.includes("key=test-api-key"), true);
-    assertEquals(tileJSONUrl.includes("session=mock-session-token"), true);
-    assertEquals(tileJSONUrl.includes("/v1/2dtiles/{z}/{x}/{y}"), true);
+    expect(tileJSONUrl).toContain("key=test-api-key");
+    expect(tileJSONUrl).toContain("session=mock-session-token");
+    expect(tileJSONUrl).toContain("/v1/2dtiles/{z}/{x}/{y}");
   } finally {
     ctx.cleanup();
   }
 });
 
-Deno.test("GoogleMapTiles - tileUrl", async () => {
+test("GoogleMapTiles - tileUrl", async () => {
   const ctx = createTestContext();
   ctx.mockFetch(mockSessionResponse);
 
@@ -189,10 +181,10 @@ Deno.test("GoogleMapTiles - tileUrl", async () => {
 
     const tileUrl = googleMapTiles.tileUrl(15, 6294, 13288);
 
-    assertEquals(tileUrl.includes("key=test-api-key"), true);
-    assertEquals(tileUrl.includes("session=mock-session-token"), true);
-    assertEquals(tileUrl.includes("/15/6294/13288"), true);
-    assertEquals(tileUrl.includes("orientation=0"), true);
+    expect(tileUrl).toContain("key=test-api-key");
+    expect(tileUrl).toContain("session=mock-session-token");
+    expect(tileUrl).toContain("/15/6294/13288");
+    expect(tileUrl).toContain("orientation=0");
   } finally {
     ctx.cleanup();
   }

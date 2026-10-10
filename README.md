@@ -7,7 +7,7 @@ various map configurations.
 
 Demo @ https://bamnet.github.io/google-map-tiles/
 
-[![Build](https://github.com/bamnet/google-map-tiles/actions/workflows/deno.yaml/badge.svg)](https://github.com/bamnet/google-map-tiles/actions/workflows/deno.yaml)
+[![Build](https://github.com/bamnet/google-map-tiles/actions/workflows/ci.yaml/badge.svg)](https://github.com/bamnet/google-map-tiles/actions/workflows/ci.yaml)
 [![JSR](https://jsr.io/badges/@bamnet/google-map-tiles)](https://jsr.io/@bamnet/google-map-tiles)
 
 ## ✨ Features
@@ -23,8 +23,11 @@ Demo @ https://bamnet.github.io/google-map-tiles/
 ## 📦 Installation
 
 ```bash
-# Using JSR (recommended)
-deno add @bamnet/google-map-tiles
+# Using Bun
+bunx jsr add @bamnet/google-map-tiles
+
+# Using Deno
+deno add jsr:@bamnet/google-map-tiles
 
 # Using NPM
 npx jsr add @bamnet/google-map-tiles
@@ -135,18 +138,23 @@ npm run dev
 
 ## 👩‍💻 Development
 
+Development uses [Bun](https://bun.sh):
+
 ```bash
+# Install dependencies
+bun install
+
 # Run tests
-deno task test
+bun test
 
 # Check types
-deno task check
+bun run check
 
 # Format code
-deno task fmt
+bun run fmt
 
 # Lint code
-deno task lint
+bun run lint
 ```
 
 ## 📄 License
