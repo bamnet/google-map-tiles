@@ -101,11 +101,7 @@ export class GoogleMapTilesSourceManager {
             // Trigger the attribution control to update its attributions.
             // This is a workaround since MapLibre doesn't expose a direct
             // update method for the attribution control.
-            control._updateData({
-              sourceDataType: "metadata",
-              type: "",
-              dataType: "source",
-            });
+            control._updateAttributions();
           }
         });
       }

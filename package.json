@@ -17,12 +17,12 @@
     "examples:build": "bun run --cwd examples build"
   },
   "peerDependencies": {
-    "maplibre-gl": "^5.4.0"
+    "maplibre-gl": "^6.4.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
     "@types/bun": "^1.4.2",
-    "maplibre-gl": "^5.4.0",
+    "maplibre-gl": "^6.4.1",
     "typescript": "^7.0.2"
   }
 }

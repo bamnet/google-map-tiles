@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "exports": "./mod.ts",
   "imports": {
-    "maplibre-gl": "npm:maplibre-gl@^5.4.0"
+    "maplibre-gl": "npm:maplibre-gl@^6.4.1"
   },
   "publish": {
     "exclude": [
