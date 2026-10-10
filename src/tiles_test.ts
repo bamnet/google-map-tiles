@@ -12,13 +12,15 @@ const mockSessionResponse = {
 
 const mockViewportResponse = {
   copyright: "Mock Copyright © 2025",
-  maxZoomRects: [{
-    maxZoom: 21,
-    north: 41.0,
-    south: 39.0,
-    east: -71.0,
-    west: -79.0,
-  }],
+  maxZoomRects: [
+    {
+      maxZoom: 21,
+      north: 41.0,
+      south: 39.0,
+      east: -71.0,
+      west: -79.0,
+    },
+  ],
 };
 
 // Setup and teardown utilities
@@ -61,19 +63,22 @@ test("GoogleMapTiles - createSession", async () => {
 
 test("GoogleMapTiles - createSession failure", async () => {
   const ctx = createTestContext();
-  ctx.mockFetch({
-    error: {
-      code: 403,
-      message: "Requests from referer https://test/ are blocked.",
-      errors: [
-        {
-          message: "Requests from referer https://test/ are blocked.",
-          domain: "global",
-          reason: "forbidden",
-        },
-      ],
+  ctx.mockFetch(
+    {
+      error: {
+        code: 403,
+        message: "Requests from referer https://test/ are blocked.",
+        errors: [
+          {
+            message: "Requests from referer https://test/ are blocked.",
+            domain: "global",
+            reason: "forbidden",
+          },
+        ],
+      },
     },
-  }, false);
+    false,
+  );
 
   try {
     const apiKey = "test-api-key";
@@ -131,9 +136,9 @@ test("GoogleMapTiles - getViewport failure", async () => {
     await googleMapTiles.createSession(sessionRequest);
 
     ctx.mockFetch({}, false);
-    await expect(googleMapTiles.getViewport(10, 40, 30, -70, -80)).rejects.toThrow(
-      "Error fetching viewport",
-    );
+    await expect(
+      googleMapTiles.getViewport(10, 40, 30, -70, -80),
+    ).rejects.toThrow("Error fetching viewport");
   } finally {
     ctx.cleanup();
   }

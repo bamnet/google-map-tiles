@@ -78,14 +78,14 @@ export class GoogleMapTilesSourceManager {
 
   private addSourceAndLayer(map: Map) {
     map.addSource(SOURCE_NAME, {
-      "type": "raster",
-      "tiles": [this.tileUrl],
-      "tileSize": 256,
+      type: "raster",
+      tiles: [this.tileUrl],
+      tileSize: 256,
     });
     map.addLayer({
-      "id": LAYER_NAME,
-      "source": SOURCE_NAME,
-      "type": "raster",
+      id: LAYER_NAME,
+      source: SOURCE_NAME,
+      type: "raster",
     });
 
     this.source = map.getSource(SOURCE_NAME);
@@ -94,10 +94,7 @@ export class GoogleMapTilesSourceManager {
   private setupAttribution(map: Map) {
     map.on("sourcedata", async (e) => {
       if (e.isSourceLoaded) {
-        await this.updateAttribution(
-          e.target.getBounds(),
-          e.target.getZoom(),
-        );
+        await this.updateAttribution(e.target.getBounds(), e.target.getZoom());
 
         map._controls.forEach((control) => {
           if (control instanceof AttributionControl) {
