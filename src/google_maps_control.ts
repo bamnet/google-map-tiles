@@ -1,11 +1,9 @@
-// Only types are imported from maplibre-gl, so this module works with
-// whichever maplibre-gl instance the application uses.
-import type { ControlPosition, IControl, Map } from "maplibre-gl";
 import {
   createGoogleLogo,
   GOOGLE_MAPS_LOGO,
   type LogoVariant,
 } from "./google_logo.ts";
+import type { MapLike } from "./maplibre_types.ts";
 import type { GoogleMapTiles } from "./tiles.ts";
 
 /**
@@ -47,10 +45,10 @@ interface GoogleSourceRef {
  * shown while at least one Google source is visible, in the variant that
  * suits the imagery.
  */
-export class GoogleMapsControl implements IControl {
+export class GoogleMapsControl {
   private readonly resolve: GoogleSourceResolver;
   private readonly logoOption: "auto" | LogoVariant;
-  private map?: Map;
+  private map?: MapLike;
   private container?: HTMLElement;
   private logo?: HTMLImageElement;
   private sources: GoogleSourceRef[] = [];
@@ -72,12 +70,13 @@ export class GoogleMapsControl implements IControl {
     this.logoOption = options.logo ?? "auto";
   }
 
-  getDefaultPosition(): ControlPosition {
+  /** Where MapLibre places the control unless `addControl()` says otherwise. */
+  getDefaultPosition(): "bottom-left" {
     return "bottom-left";
   }
 
-  /** {@inheritDoc IControl.onAdd} */
-  onAdd(map: Map): HTMLElement {
+  /** Called by MapLibre when the control is added to a map. */
+  onAdd(map: MapLike): HTMLElement {
     this.map = map;
     this.container = document.createElement("div");
     this.container.className = "maplibregl-ctrl";
@@ -93,8 +92,8 @@ export class GoogleMapsControl implements IControl {
     return this.container;
   }
 
-  /** {@inheritDoc IControl.onRemove} */
-  onRemove(map: Map): void {
+  /** Called by MapLibre when the control is removed from a map. */
+  onRemove(map: MapLike): void {
     map.off("styledata", this.onStyleData);
     map.off("moveend", this.onMoveEnd);
     this.container?.remove();

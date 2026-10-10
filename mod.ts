@@ -18,3 +18,9 @@ export type {
   GoogleMapsControlOptions,
   GoogleSourceResolver,
 } from "./src/google_maps_control.ts";
+export type {
+  MapLike,
+  MapStyleLike,
+  ProtocolRequest,
+  ProtocolResponse,
+} from "./src/maplibre_types.ts";

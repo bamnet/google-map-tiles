@@ -49,9 +49,10 @@ The library supports three ways of using Google Map Tiles:
 | A MapLibre style, but not MapLibre GL JS (MapLibre Native, Flutter, or a server that builds styles) | `@bamnet/google-map-tiles/core` | A ready-made MapLibre source or style |
 | No MapLibre (your own `<img>` grid, canvas, Leaflet, OpenLayers, ...) | `@bamnet/google-map-tiles/core` | Sessions, tile URLs and attribution text |
 
-`@bamnet/google-map-tiles/core` has no dependencies and runs anywhere `fetch`
-is available: browsers, Node, Bun, Deno and edge runtimes. The main entry point
-includes everything in `/core`, and requires `maplibre-gl` 6.4.1 or later.
+The package has no dependencies. `@bamnet/google-map-tiles/core` runs anywhere
+`fetch` is available: browsers, Node, Bun, Deno and edge runtimes. The main
+entry point includes everything in `/core`, and works with the `maplibre-gl`
+your app installs, version 6.4.1 or later.
 
 ## 🗺️ With MapLibre GL JS
 

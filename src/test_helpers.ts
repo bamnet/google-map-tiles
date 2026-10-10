@@ -1,6 +1,6 @@
 // Test-only fakes: a scripted Map Tiles API and a minimal MapLibre map.
 import { spyOn } from "bun:test";
-import type { Map } from "maplibre-gl";
+import type { MapLike } from "./maplibre_types.ts";
 
 /** Options for {@link fakeTilesApi}. */
 export interface FakeTilesApiOptions {
@@ -105,7 +105,7 @@ interface FakeLayer {
  * Just enough of a MapLibre map for the controls: events, a style made of
  * sources and layers, sources with attribution, bounds and zoom.
  */
-export class FakeMap {
+export class FakeMap implements MapLike {
   sources: Record<string, FakeSource> = {};
   layers: FakeLayer[] = [];
   zoom = 3.4;
@@ -163,20 +163,20 @@ export class FakeMap {
     this.layers.push(layer);
     this.fire("styledata");
   }
-  controls: { onAdd(map: Map): unknown; onRemove(map: Map): void }[] = [];
-  addControl(control: { onAdd(map: Map): unknown; onRemove(map: Map): void }) {
+  controls: { onAdd(map: MapLike): unknown; onRemove(map: MapLike): void }[] =
+    [];
+  addControl(control: {
+    onAdd(map: MapLike): unknown;
+    onRemove(map: MapLike): void;
+  }) {
     this.controls.push(control);
-    control.onAdd(this.asMap());
+    control.onAdd(this);
     return this;
   }
-  removeControl(control: { onRemove(map: Map): void }) {
+  removeControl(control: { onRemove(map: MapLike): void }) {
     this.controls = this.controls.filter((c) => c !== control);
-    control.onRemove(this.asMap());
+    control.onRemove(this);
     return this;
-  }
-
-  asMap(): Map {
-    return this as unknown as Map;
   }
 }
 

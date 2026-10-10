@@ -6,9 +6,6 @@
     ".": "./mod.ts",
     "./core": "./core.ts"
   },
-  "imports": {
-    "maplibre-gl": "npm:maplibre-gl@^6.4.1"
-  },
   "publish": {
     "exclude": [
       ".github",

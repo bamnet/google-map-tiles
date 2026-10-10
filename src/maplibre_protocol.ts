@@ -1,12 +1,10 @@
-// Only types are imported from maplibre-gl, so this module works with
-// whichever maplibre-gl instance the application uses.
-import type { GetResourceResponse, RequestParameters } from "maplibre-gl";
 import { tilesApiError } from "./errors.ts";
 import {
   GoogleMapsControl,
   type GoogleMapsControlOptions,
 } from "./google_maps_control.ts";
 import { type RasterSource, TILE_SIZE } from "./maplibre_style.ts";
+import type { ProtocolRequest, ProtocolResponse } from "./maplibre_types.ts";
 import { SessionPool, type SessionPoolOptions } from "./session_pool.ts";
 import type { SessionOptions } from "./tiles.ts";
 
@@ -67,9 +65,9 @@ export class GoogleMapTilesProtocol {
    * {@link scheme} as the protocol name.
    */
   readonly handler = async (
-    request: RequestParameters,
+    request: ProtocolRequest,
     abortController: AbortController,
-  ): Promise<GetResourceResponse<ArrayBuffer>> => {
+  ): Promise<ProtocolResponse> => {
     const { options, z, x, y } = decodeTileUrl(request.url, this.scheme);
     const client = await this.pool.client(options);
     const response = await fetch(client.tileUrl(z, x, y), {
