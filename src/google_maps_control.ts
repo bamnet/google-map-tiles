@@ -1,7 +1,7 @@
 // Only types are imported from maplibre-gl, so this module works with
 // whichever maplibre-gl instance the application uses.
 import type { ControlPosition, IControl, Map } from "maplibre-gl";
-import { createGoogleLogo } from "./logo_control.ts";
+import { createGoogleLogo } from "./google_logo.ts";
 import type { GoogleMapTiles } from "./tiles.ts";
 
 /**

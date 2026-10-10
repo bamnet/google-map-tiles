@@ -15,5 +15,3 @@ export type { ProtocolOptions } from "./src/maplibre_protocol.ts";
 
 export { GoogleMapsControl } from "./src/google_maps_control.ts";
 export type { GoogleSourceResolver } from "./src/google_maps_control.ts";
-
-export { addGoogleLogo, GoogleLogoControl } from "./src/logo_control.ts";
