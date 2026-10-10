@@ -2,8 +2,8 @@
 
 A TypeScript library for the
 [Google Map Tiles API](https://developers.google.com/maps/documentation/tile).
-It adds Google tiles to MapLibre GL JS in one call, with attribution and the
-Google Maps logo handled for you. Its dependency-free core also builds MapLibre
+It lets MapLibre GL JS use Google tiles as ordinary style sources, with
+attribution and the Google Maps logo handled for you. Its dependency-free core also builds MapLibre
 styles for MapLibre Native and Flutter, and works with no map library at all.
 
 Demo @ https://bamnet.github.io/google-map-tiles/
@@ -55,42 +55,53 @@ includes everything in `/core`, and requires `maplibre-gl` 6.4.1 or later.
 
 ## 🗺️ With MapLibre GL JS
 
+Register the `GoogleMapTilesProtocol` with MapLibre, then use Google tiles in
+your style like any other source:
+
 ```typescript
-import { Map } from "maplibre-gl";
-import { addGoogleMapTiles } from "@bamnet/google-map-tiles";
+import { addProtocol, Map } from "maplibre-gl";
+import { GoogleMapTilesProtocol } from "@bamnet/google-map-tiles";
+
+const google = new GoogleMapTilesProtocol("YOUR_API_KEY");
+addProtocol("google", google.handler);
 
 const map = new Map({
   container: "map",
-  center: [0, 0],
-  zoom: 1,
+  style: {
+    version: 8,
+    sources: {
+      google: google.source({
+        mapType: "roadmap",
+        language: "en-US",
+        region: "us",
+      }),
+    },
+    layers: [{ id: "google", type: "raster", source: "google" }],
+  },
 });
 
-// Add Google Maps tiles to your MapLibre map
-await addGoogleMapTiles("YOUR_API_KEY", map, {
-  mapType: "roadmap",
-  language: "en-US",
-  region: "us",
-});
+// The Google Maps logo, and attribution for every Google source in the style
+map.addControl(google.control());
 ```
 
-This adds the tiles, keeps the map's attribution up to date as it moves, and
-shows the Google Maps logo.
+Google sources work like any other source: they survive `setStyle()`, can sit
+under labels or other layers, and a style can use several. To change options,
+change the source, for example with `setStyle()`.
 
-For more control, use `GoogleMapTilesSourceManager` directly:
+Sources look like `google://roadmap/{z}/{x}/{y}?language=en-US&region=us` and
+don't contain your API key. Sessions are created when tiles are first needed,
+shared between sources with the same options, and replaced before they expire.
+
+A bad API key or invalid options show up as tile errors once the map loads. To
+catch them up front, validate the options first. The session is then reused
+for tiles:
 
 ```typescript
-import { GoogleMapTilesSourceManager } from "@bamnet/google-map-tiles";
-
-const source = await GoogleMapTilesSourceManager.create("YOUR_API_KEY", {
-  mapType: "satellite",
-  language: "fr",
-  region: "fr",
-});
-
-source.addToMap(map);
-
-// Later, when needed:
-source.removeFromMap(map);
+try {
+  await google.validate({ mapType: "roadmap", language: "en-US", region: "us" });
+} catch (error) {
+  // e.g. "Error creating session: API key not valid."
+}
 ```
 
 ## 📐 With a MapLibre Style (MapLibre Native, Flutter, servers)
@@ -177,10 +188,10 @@ require two things wherever tiles are shown:
   by `getViewport()`, shown in full as provided, usually in the bottom right.
   It changes as the map moves, so fetch it again when the view changes.
 
-`addGoogleMapTiles()` does both. With `/core`, your app is responsible for
+`google.control()` does both. With `/core`, your app is responsible for
 implementing this.
 
-Tile URLs from every mode include your API key. Restrict the key to the Map
+Tile requests in every mode include your API key. Restrict the key to the Map
 Tiles API in the Google Cloud console.
 
 ## ⚙️ Configuration Options
@@ -210,10 +221,10 @@ change the API host.
 Check out the `examples` directory for a complete demo application showing how
 to:
 
-- 🗺️ Initialize a map with Google tiles
-- 🔄 Switch between map types
+- 🗺️ Use Google tiles as a style source, with `GoogleMapTilesProtocol`
+- 🔄 Switch between map types with `setStyle()`
 - 🌐 Configure language and region settings
-- 🔑 Handle API keys
+- 🔑 Validate API keys and options before loading tiles
 
 The example is part of the repo's Bun workspace and runs against the library
 source in this repo, so library changes show up immediately. To run it:

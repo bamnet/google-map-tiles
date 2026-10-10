@@ -231,15 +231,19 @@ export class GoogleMapTiles {
    * @param z Zoom level
    * @param x Tile X coordinate
    * @param y Tile Y coordinate
-   * @param orientation Tile orientation in degrees (default: 0)
+   * @param orientation Tile orientation in degrees. Omitted unless given:
+   *   the API rejects satellite tiles with any orientation parameter.
    * @returns URL to fetch the tile image
    * @throws {Error} If no session exists
    */
-  tileUrl(z: number, x: number, y: number, orientation: number = 0): string {
+  tileUrl(z: number, x: number, y: number, orientation?: number): string {
     if (!this.session) {
       throw new Error("Session not created. Call createSession() first.");
     }
 
-    return `${this.baseUrl}/v1/2dtiles/${z}/${x}/${y}?session=${this.session.session}&key=${this.apiKey}&orientation=${orientation}`;
+    const url = `${this.baseUrl}/v1/2dtiles/${z}/${x}/${y}?session=${this.session.session}&key=${this.apiKey}`;
+    return orientation === undefined
+      ? url
+      : `${url}&orientation=${orientation}`;
   }
 }
