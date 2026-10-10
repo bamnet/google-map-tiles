@@ -1,7 +1,14 @@
 import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
-import type { LngLatBounds, Map, Source } from "maplibre-gl";
-import { AttributionControl } from "maplibre-gl";
-import { addGoogleLogo, GoogleLogoControl } from "./logo_control.ts";
+import { DEFAULT_ATTRIBUTION, TILE_SIZE } from "./source.ts";
+// Only types are imported from maplibre-gl, so this module works with
+// whichever maplibre-gl instance the application uses.
+import type {
+  LngLatBounds,
+  Map,
+  MapSourceDataEvent,
+  Source,
+} from "maplibre-gl";
+import { addGoogleLogo, type GoogleLogoControl } from "./logo_control.ts";
 
 // Default options
 const defaultSessionOptions: SessionOptions = {
@@ -26,6 +33,8 @@ export class GoogleMapTilesSourceManager {
   readonly client: GoogleMapTiles;
 
   private source?: Source;
+  private logo?: GoogleLogoControl;
+  private onSourceData?: (e: MapSourceDataEvent) => void;
 
   /**
    * Creates a new GoogleMapTilesSource with an active session.
@@ -43,9 +52,9 @@ export class GoogleMapTilesSourceManager {
     this.client = new GoogleMapTiles(apiKey);
   }
 
-  /** @inheritDoc GoogleMapTiles.tileJSONUrl */
+  /** @inheritDoc GoogleMapTiles.tileUrlTemplate */
   get tileUrl(): string {
-    return this.client.tileJSONUrl();
+    return this.client.tileUrlTemplate();
   }
 
   /**
@@ -55,7 +64,7 @@ export class GoogleMapTilesSourceManager {
   addToMap(map: Map) {
     this.addSourceAndLayer(map);
     this.setupAttribution(map);
-    addGoogleLogo(map);
+    this.logo = addGoogleLogo(map);
   }
 
   /**
@@ -69,10 +78,13 @@ export class GoogleMapTilesSourceManager {
       map.removeSource(SOURCE_NAME);
     }
 
-    for (const control of map._controls) {
-      if (control instanceof GoogleLogoControl) {
-        map.removeControl(control);
-      }
+    if (this.onSourceData) {
+      map.off("sourcedata", this.onSourceData);
+      this.onSourceData = undefined;
+    }
+    if (this.logo) {
+      map.removeControl(this.logo);
+      this.logo = undefined;
     }
   }
 
@@ -80,7 +92,8 @@ export class GoogleMapTilesSourceManager {
     map.addSource(SOURCE_NAME, {
       type: "raster",
       tiles: [this.tileUrl],
-      tileSize: 256,
+      tileSize: TILE_SIZE,
+      attribution: DEFAULT_ATTRIBUTION,
     });
     map.addLayer({
       id: LAYER_NAME,
@@ -92,21 +105,23 @@ export class GoogleMapTilesSourceManager {
   }
 
   private setupAttribution(map: Map) {
-    map.on("sourcedata", async (e) => {
+    this.onSourceData = async (e) => {
       if (e.isSourceLoaded) {
         await this.updateAttribution(e.target.getBounds(), e.target.getZoom());
 
-        map._controls.forEach((control) => {
-          if (control instanceof AttributionControl) {
-            // Refresh the attribution control so it picks up the new Google
-            // attribution. MapLibre has no public API for this, so we call
-            // the internal _updateAttributions(), which may change between
-            // MapLibre releases.
-            control._updateAttributions();
-          }
+        // Ask the map's attribution control to re-read source attributions.
+        // AttributionControl refreshes on "sourcedata" events carrying
+        // metadata, so firing one avoids depending on the AttributionControl
+        // class or its private methods. The event has no isSourceLoaded, so
+        // it does not re-trigger this listener.
+        map.fire("sourcedata", {
+          dataType: "source",
+          sourceDataType: "metadata",
+          sourceId: SOURCE_NAME,
         });
       }
-    });
+    };
+    map.on("sourcedata", this.onSourceData);
   }
 
   async updateAttribution(bounds: LngLatBounds, zoom: number) {

@@ -2,10 +2,12 @@ import type { ControlPosition, IControl, Map } from "maplibre-gl";
 
 /**
  * Adds the Google logo to the map.
+ * @returns The added control, for later removal with `map.removeControl()`.
  */
-export function addGoogleLogo(map: Map) {
+export function addGoogleLogo(map: Map): GoogleLogoControl {
   const logo = new GoogleLogoControl();
   map.addControl(logo, "bottom-left");
+  return logo;
 }
 
 /**

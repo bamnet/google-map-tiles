@@ -36,7 +36,8 @@ npx jsr add @bamnet/google-map-tiles
 yarn add jsr:@bamnet/google-map-tiles
 ```
 
-Requires `maplibre-gl` 6.4.1 or later.
+The MapLibre integration requires `maplibre-gl` 6.4.1 or later. The
+`@bamnet/google-map-tiles/core` entry point works without MapLibre.
 
 ## 🚀 Quick Start
 
@@ -99,12 +100,48 @@ source.addToMap(map);
 source.removeFromMap(map);
 ```
 
-### Low-level API Access
+### Without MapLibre GL JS (`/core`)
+
+`@bamnet/google-map-tiles/core` contains the Tile API client and helpers that
+build plain MapLibre source and style JSON. It has no dependencies and runs
+anywhere `fetch` is available: browsers, Node, Bun, Deno and edge runtimes.
+
+Build a complete style, for example on a server, to hand to any client that
+loads MapLibre styles (MapLibre Native, Flutter, or MapLibre GL JS):
+
+```typescript
+import { createGoogleStyle } from "@bamnet/google-map-tiles/core";
+
+const { style, expiresAt } = await createGoogleStyle("YOUR_API_KEY", {
+  mapType: "roadmap",
+  language: "en-US",
+  region: "us",
+});
+// Serve `style` as JSON. Its tile URLs stop working at `expiresAt`
+// (currently about two weeks), so create a new one before then.
+```
+
+Or create just a source to add to an existing style:
+
+```typescript
+import { createGoogleSource } from "@bamnet/google-map-tiles/core";
+
+const { source, expiresAt } = await createGoogleSource("YOUR_API_KEY", {
+  mapType: "satellite",
+  language: "en-US",
+  region: "us",
+});
+map.addSource("google", source);
+map.addLayer({ id: "google", type: "raster", source: "google" });
+```
+
+Tile URLs in sources and styles include your API key, so restrict the key to
+the Map Tiles API in the Google Cloud console.
 
 For direct access to the Google Maps Tiles API:
 
 ```typescript
-import { GoogleMapTiles, MapType } from "@bamnet/google-map-tiles";
+import { GoogleMapTiles, MapType } from "@bamnet/google-map-tiles/core";
 
 const client = new GoogleMapTiles("YOUR_API_KEY");
 await client.createSession({
@@ -118,7 +155,16 @@ const viewport = await client.getViewport(10, 40, 30, -70, -80);
 
 // Get tile URLs
 const tileUrl = client.tileUrl(15, 6294, 13288);
+const template = client.tileUrlTemplate(); // .../{z}/{x}/{y}?...
+
+// Sessions expire; refresh before then
+if (client.isExpiring()) {
+  await client.refreshSession();
+}
 ```
+
+`GoogleMapTiles` also accepts `{ fetch, baseUrl }` options to supply your own
+`fetch` implementation or API host.
 
 ## 💡 Example
 
