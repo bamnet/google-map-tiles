@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./mod.ts"
+    ".": "./mod.ts",
+    "./core": "./core.ts"
   },
   "workspaces": [
     "examples"
@@ -14,7 +15,8 @@
     "lint": "biome lint .",
     "fmt": "biome format --write .",
     "examples:dev": "bun run --cwd examples dev",
-    "examples:build": "bun run --cwd examples build"
+    "examples:build": "bun run --cwd examples build",
+    "smoke:node": "node --experimental-transform-types --no-warnings scripts/node_smoke.mjs"
   },
   "peerDependencies": {
     "maplibre-gl": "^6.4.1"

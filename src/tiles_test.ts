@@ -1,10 +1,11 @@
-import { expect, test } from "bun:test";
+import { afterEach, expect, mock, spyOn, test } from "bun:test";
 import { GoogleMapTiles, MapType, type SessionOptions } from "./tiles.ts";
 
 // Mock responses
 const mockSessionResponse = {
   session: "mock-session-token",
-  expiry: new Date(Date.now() + 3600000).toISOString(),
+  // Seconds since the epoch, as returned by the API. Two weeks from now.
+  expiry: String(Math.floor(Date.now() / 1000) + 14 * 24 * 60 * 60),
   tileWidth: 256,
   tileHeight: 256,
   imageFormat: "png",
@@ -22,6 +23,21 @@ const mockViewportResponse = {
     },
   ],
 };
+
+afterEach(() => {
+  mock.restore();
+});
+
+/**
+ * Replaces fetch with one that returns a successful session response. The
+ * cast is needed because Bun's fetch type also requires `preconnect`.
+ */
+function mockSession() {
+  return spyOn(globalThis, "fetch").mockImplementation((() =>
+    Promise.resolve(
+      Response.json(mockSessionResponse),
+    )) as unknown as typeof fetch);
+}
 
 // Setup and teardown utilities
 function createTestContext() {
@@ -144,7 +160,7 @@ test("GoogleMapTiles - getViewport failure", async () => {
   }
 });
 
-test("GoogleMapTiles - tileJSONUrl", async () => {
+test("GoogleMapTiles - tileUrlTemplate", async () => {
   const ctx = createTestContext();
   ctx.mockFetch(mockSessionResponse);
 
@@ -159,11 +175,11 @@ test("GoogleMapTiles - tileJSONUrl", async () => {
 
     await googleMapTiles.createSession(sessionRequest);
 
-    const tileJSONUrl = googleMapTiles.tileJSONUrl();
+    const tileUrlTemplate = googleMapTiles.tileUrlTemplate();
 
-    expect(tileJSONUrl).toContain("key=test-api-key");
-    expect(tileJSONUrl).toContain("session=mock-session-token");
-    expect(tileJSONUrl).toContain("/v1/2dtiles/{z}/{x}/{y}");
+    expect(tileUrlTemplate).toContain("key=test-api-key");
+    expect(tileUrlTemplate).toContain("session=mock-session-token");
+    expect(tileUrlTemplate).toContain("/v1/2dtiles/{z}/{x}/{y}");
   } finally {
     ctx.cleanup();
   }
@@ -193,4 +209,67 @@ test("GoogleMapTiles - tileUrl", async () => {
   } finally {
     ctx.cleanup();
   }
+});
+
+test("GoogleMapTiles - expiresAt and isExpiring", async () => {
+  mockSession();
+  const client = new GoogleMapTiles("test-api-key");
+  expect(client.expiresAt()).toBeNull();
+  expect(client.isExpiring()).toBe(true);
+
+  await client.createSession({
+    mapType: MapType.Roadmap,
+    language: "en-US",
+    region: "us",
+  });
+
+  expect(client.expiresAt()?.getTime()).toBe(
+    Number(mockSessionResponse.expiry) * 1000,
+  );
+  expect(client.isExpiring()).toBe(false);
+  // Within a 15-day margin, a two-week session counts as expiring.
+  expect(client.isExpiring(15 * 24 * 60 * 60 * 1000)).toBe(true);
+});
+
+test("GoogleMapTiles - refreshSession reuses the last options", async () => {
+  const fetchSpy = mockSession();
+  const client = new GoogleMapTiles("test-api-key");
+  const options: SessionOptions = {
+    mapType: MapType.Terrain,
+    language: "fr",
+    region: "fr",
+  };
+
+  await client.createSession(options);
+  await client.refreshSession();
+
+  const bodies = fetchSpy.mock.calls.map(([, init]) =>
+    JSON.parse(init?.body as string),
+  );
+  expect(bodies).toEqual([options, options]);
+});
+
+test("GoogleMapTiles - refreshSession requires a session", async () => {
+  const client = new GoogleMapTiles("test-api-key");
+  await expect(client.refreshSession()).rejects.toThrow("Session not created");
+});
+
+test("GoogleMapTiles - uses the baseUrl option", async () => {
+  const fetchSpy = mockSession();
+  const client = new GoogleMapTiles("test-api-key", {
+    baseUrl: "https://tiles.example.com",
+  });
+
+  await client.createSession({
+    mapType: MapType.Roadmap,
+    language: "en-US",
+    region: "us",
+  });
+
+  expect(fetchSpy.mock.calls.map(([url]) => url)).toEqual([
+    "https://tiles.example.com/v1/createSession?key=test-api-key",
+  ]);
+  expect(client.tileUrlTemplate()).toStartWith(
+    "https://tiles.example.com/v1/2dtiles/{z}/{x}/{y}?",
+  );
 });

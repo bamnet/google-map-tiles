@@ -33,6 +33,7 @@ const layerTypeSelect = document.getElementById(
 ) as HTMLSelectElement;
 const regionInput = document.getElementById("region") as HTMLInputElement;
 const languageInput = document.getElementById("language") as HTMLInputElement;
+const highDpiInput = document.getElementById("highDpi") as HTMLInputElement;
 
 // Set initial API key if available from environment
 if (import.meta.env.VITE_GOOGLE_MAPS_API_KEY) {
@@ -46,6 +47,7 @@ mapTypeSelect.addEventListener("change", updateMap);
 layerTypeSelect.addEventListener("change", updateMap);
 regionInput.addEventListener("change", updateMap);
 languageInput.addEventListener("change", updateMap);
+highDpiInput.addEventListener("change", updateMap);
 
 async function updateMap() {
   const apiKey = apiKeyInput.value.trim();
@@ -63,6 +65,11 @@ async function updateMap() {
       region: regionInput.value,
       language: languageInput.value,
     };
+
+    if (highDpiInput.checked) {
+      options.scale = "scaleFactor2x";
+      options.highDpi = true;
+    }
 
     // Add layer type if selected
     const layerType = layerTypeSelect.value;

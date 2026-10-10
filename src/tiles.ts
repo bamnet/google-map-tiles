@@ -81,26 +81,46 @@ export interface SessionOptions {
  */
 export interface SessionResponse {
   session: string;
+  /** Expiration time, in seconds since the epoch (e.g. "1792807483"). */
   expiry: string;
   tileWidth: number;
   tileHeight: number;
   imageFormat: string;
 }
 
+/** Options for constructing a {@link GoogleMapTiles} client. */
+export interface ClientOptions {
+  /**
+   * Base URL for API and tile requests.
+   * @default "https://tile.googleapis.com"
+   */
+  baseUrl?: string;
+}
+
+/** How long before expiry {@link GoogleMapTiles.isExpiring} reports true. */
+const DEFAULT_EXPIRY_MARGIN_MS = 60 * 60 * 1000;
+
 /**
  * Client for the Google Maps Tiles API v1.
  * Manages sessions and provides methods to fetch map tiles and viewport information.
+ *
+ * Has no dependency on MapLibre and runs anywhere `fetch` is available.
  */
 export class GoogleMapTiles {
   apiKey: string;
   session: SessionResponse | null = null;
 
+  private sessionOptions: SessionOptions | null = null;
+  private readonly baseUrl: string;
+
   /**
    * Creates a new GoogleMapTiles client.
    * @param apiKey Google Maps API key
+   * @param options Optional client configuration
    */
-  constructor(apiKey: string) {
+  constructor(apiKey: string, options: ClientOptions = {}) {
     this.apiKey = apiKey;
+    this.baseUrl = options.baseUrl ?? API_BASE_URL;
   }
 
   /**
@@ -110,7 +130,7 @@ export class GoogleMapTiles {
    * @throws {Error} If the session creation fails
    */
   async createSession(request: SessionOptions): Promise<SessionResponse> {
-    const url = `${API_BASE_URL}/v1/createSession?key=${this.apiKey}`;
+    const url = `${this.baseUrl}/v1/createSession?key=${this.apiKey}`;
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -127,7 +147,39 @@ export class GoogleMapTiles {
     }
 
     this.session = data as SessionResponse;
+    this.sessionOptions = request;
     return this.session;
+  }
+
+  /**
+   * Creates a new session using the options from the last
+   * {@link createSession} call.
+   * @throws {Error} If no session has been created yet, or the request fails
+   */
+  async refreshSession(): Promise<SessionResponse> {
+    if (!this.sessionOptions) {
+      throw new Error("Session not created. Call createSession() first.");
+    }
+    return await this.createSession(this.sessionOptions);
+  }
+
+  /**
+   * The time the current session expires, or null if there is no session.
+   */
+  expiresAt(): Date | null {
+    if (!this.session) {
+      return null;
+    }
+    return new Date(Number(this.session.expiry) * 1000);
+  }
+
+  /**
+   * Whether the session is missing, expired, or expires within `marginMs`.
+   * @param marginMs How far ahead of expiry to report true (default: 1 hour)
+   */
+  isExpiring(marginMs: number = DEFAULT_EXPIRY_MARGIN_MS): boolean {
+    const expiresAt = this.expiresAt();
+    return !expiresAt || expiresAt.getTime() - Date.now() <= marginMs;
   }
 
   /**
@@ -151,7 +203,7 @@ export class GoogleMapTiles {
       throw new Error("Session not created. Call createSession() first.");
     }
 
-    const url = `${API_BASE_URL}/tile/v1/viewport?session=${this.session.session}&key=${this.apiKey}&zoom=${zoom}&north=${north}&south=${south}&east=${east}&west=${west}`;
+    const url = `${this.baseUrl}/tile/v1/viewport?session=${this.session.session}&key=${this.apiKey}&zoom=${zoom}&north=${north}&south=${south}&east=${east}&west=${west}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -162,14 +214,16 @@ export class GoogleMapTiles {
   }
 
   /**
-   * Generates a TileJSON URL for fetching tiles.
+   * Generates a tile URL template with `{z}`, `{x}` and `{y}` placeholders,
+   * suitable for the `tiles` array of a MapLibre raster source.
+   * @throws {Error} If no session exists
    */
-  tileJSONUrl(): string {
+  tileUrlTemplate(): string {
     if (!this.session) {
       throw new Error("Session not created. Call createSession() first.");
     }
 
-    return `${API_BASE_URL}/v1/2dtiles/{z}/{x}/{y}?session=${this.session.session}&key=${this.apiKey}`;
+    return `${this.baseUrl}/v1/2dtiles/{z}/{x}/{y}?session=${this.session.session}&key=${this.apiKey}`;
   }
 
   /**
@@ -186,6 +240,6 @@ export class GoogleMapTiles {
       throw new Error("Session not created. Call createSession() first.");
     }
 
-    return `${API_BASE_URL}/v1/2dtiles/${z}/${x}/${y}?session=${this.session.session}&key=${this.apiKey}&orientation=${orientation}`;
+    return `${this.baseUrl}/v1/2dtiles/${z}/${x}/${y}?session=${this.session.session}&key=${this.apiKey}&orientation=${orientation}`;
   }
 }

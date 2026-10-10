@@ -2,7 +2,10 @@
   "name": "@bamnet/google-map-tiles",
   "version": "0.3.0",
   "license": "Apache-2.0",
-  "exports": "./mod.ts",
+  "exports": {
+    ".": "./mod.ts",
+    "./core": "./core.ts"
+  },
   "imports": {
     "maplibre-gl": "npm:maplibre-gl@^6.4.1"
   },
@@ -14,7 +17,8 @@
       "biome.json",
       "bun.lock",
       "tsconfig*.json",
-      "bunfig.toml"
+      "bunfig.toml",
+      "scripts"
     ]
   }
 }
