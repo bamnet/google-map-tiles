@@ -205,7 +205,10 @@ test("GoogleMapTiles - tileUrl", async () => {
     expect(tileUrl).toContain("key=test-api-key");
     expect(tileUrl).toContain("session=mock-session-token");
     expect(tileUrl).toContain("/15/6294/13288");
-    expect(tileUrl).toContain("orientation=0");
+    expect(tileUrl).not.toContain("orientation");
+    expect(googleMapTiles.tileUrl(15, 6294, 13288, 90)).toEndWith(
+      "&orientation=90",
+    );
   } finally {
     ctx.cleanup();
   }
