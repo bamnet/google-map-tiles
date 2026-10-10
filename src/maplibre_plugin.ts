@@ -98,14 +98,11 @@ export class GoogleMapTilesSourceManager {
 
         map._controls.forEach((control) => {
           if (control instanceof AttributionControl) {
-            // Trigger the attribution control to update its attributions.
-            // This is a workaround since MapLibre doesn't expose a direct
-            // update method for the attribution control.
-            control._updateData({
-              sourceDataType: "metadata",
-              type: "",
-              dataType: "source",
-            });
+            // Refresh the attribution control so it picks up the new Google
+            // attribution. MapLibre has no public API for this, so we call
+            // the internal _updateAttributions(), which may change between
+            // MapLibre releases.
+            control._updateAttributions();
           }
         });
       }
