@@ -2,16 +2,24 @@ import { tilesApiError } from "./errors.ts";
 
 export const API_BASE_URL = "https://tile.googleapis.com";
 
+/** A geographic area, bounded by latitudes and longitudes in degrees. */
+export interface LatLngBounds {
+  /** Northern latitude. */
+  north: number;
+  /** Southern latitude. */
+  south: number;
+  /** Eastern longitude. */
+  east: number;
+  /** Western longitude. */
+  west: number;
+}
+
 /**
  * Defines a rectangular region and the maximum zoom level at which
  * data is available in that region.
  */
-export interface ZoomRectangle {
+export interface ZoomRectangle extends LatLngBounds {
   maxZoom: number;
-  north: number;
-  south: number;
-  east: number;
-  west: number;
 }
 
 /**
@@ -228,28 +236,23 @@ export class GoogleMapTiles {
   }
 
   /**
-   * Gets viewport information for the specified geographic bounds.
+   * Gets the attribution and available zoom levels for an area, e.g. the
+   * visible map. Show the returned `copyright` wherever tiles are shown.
    * @param zoom Zoom level
-   * @param north Northern latitude bound
-   * @param south Southern latitude bound
-   * @param east Eastern longitude bound
-   * @param west Western longitude bound
+   * @param bounds The area, e.g. from {@link tileBounds} for tiles you show
    * @returns Viewport details including copyright and zoom rectangles
    * @throws {Error} If no session exists
    * @throws {TilesApiError} If the API rejects the request
    */
   async getViewport(
     zoom: number,
-    north: number,
-    south: number,
-    east: number,
-    west: number,
+    bounds: LatLngBounds,
   ): Promise<ViewportResponse> {
     if (!this.session) {
       throw new Error("Session not created. Call createSession() first.");
     }
 
-    const url = `${this.baseUrl}/tile/v1/viewport?session=${this.session.session}&key=${this.apiKey}&zoom=${zoom}&north=${north}&south=${south}&east=${east}&west=${west}`;
+    const url = `${this.baseUrl}/tile/v1/viewport?session=${this.session.session}&key=${this.apiKey}&zoom=${zoom}&north=${bounds.north}&south=${bounds.south}&east=${bounds.east}&west=${bounds.west}`;
     const response = await fetch(url);
 
     if (!response.ok) {

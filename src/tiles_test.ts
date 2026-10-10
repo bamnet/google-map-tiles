@@ -6,6 +6,7 @@ import {
   Scale,
   type SessionOptions,
 } from "./tiles.ts";
+import { mockTilesApi } from "./test_helpers.ts";
 
 // Mock responses
 const mockSessionResponse = {
@@ -133,7 +134,12 @@ test("GoogleMapTiles - getViewport", async () => {
     await googleMapTiles.createSession(sessionRequest);
 
     ctx.mockFetch(mockViewportResponse);
-    const viewport = await googleMapTiles.getViewport(10, 40, 30, -70, -80);
+    const viewport = await googleMapTiles.getViewport(10, {
+      north: 40,
+      south: 30,
+      east: -70,
+      west: -80,
+    });
     expect(viewport).toEqual(mockViewportResponse);
   } finally {
     ctx.cleanup();
@@ -157,7 +163,12 @@ test("GoogleMapTiles - getViewport failure", async () => {
 
     ctx.mockFetch({}, 500);
     await expect(
-      googleMapTiles.getViewport(10, 40, 30, -70, -80),
+      googleMapTiles.getViewport(10, {
+        north: 40,
+        south: 30,
+        east: -70,
+        west: -80,
+      }),
     ).rejects.toThrow("Error fetching viewport");
   } finally {
     ctx.cleanup();
@@ -309,4 +320,26 @@ test("SessionOptions - enums and their string values are interchangeable", () =>
     { ...withStrings, imageFormat: "webp" },
   ];
   expect(invalid).toHaveLength(3);
+});
+
+test("GoogleMapTiles - getViewport sends each bound as its own parameter", async () => {
+  const fetchSpy = mockTilesApi();
+  const client = new GoogleMapTiles("test-api-key");
+  await client.createSession({
+    mapType: MapType.Roadmap,
+    language: "en-US",
+    region: "US",
+  });
+
+  await client.getViewport(10, { north: 40, south: 30, east: -70, west: -80 });
+  const url = new URL(String(fetchSpy.mock.calls.at(-1)?.[0]));
+  expect(url.pathname).toBe("/tile/v1/viewport");
+  expect(Object.fromEntries(url.searchParams)).toMatchObject({
+    zoom: "10",
+    north: "40",
+    south: "30",
+    east: "-70",
+    west: "-80",
+  });
+  mock.restore();
 });

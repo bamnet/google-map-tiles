@@ -133,7 +133,9 @@ test("TilesApiError - viewport with an invalid session", async () => {
       Response.json(INVALID_SESSION, { status: 401 }),
     )) as unknown as typeof fetch);
 
-  const error = await caught(client.getViewport(2, 60, -60, 170, -170));
+  const error = await caught(
+    client.getViewport(2, { north: 60, south: -60, east: 170, west: -170 }),
+  );
   expect(error.status).toBe(401);
   expect(error.reason).toBe("authError");
   expect(error.message).toStartWith("Error fetching viewport: 401 ");

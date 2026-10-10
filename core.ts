@@ -16,11 +16,15 @@ export {
 } from "./src/tiles.ts";
 export type {
   ClientOptions,
+  LatLngBounds,
   SessionOptions,
   SessionResponse,
   ViewportResponse,
   ZoomRectangle,
 } from "./src/tiles.ts";
+
+export { MAX_LATITUDE, tileAt, tileBounds } from "./src/tile_math.ts";
+export type { LatLng, TileCoord } from "./src/tile_math.ts";
 
 export { TilesApiError } from "./src/errors.ts";
 export type { GoogleApiErrorBody } from "./src/errors.ts";

@@ -149,7 +149,7 @@ options, then build tile URLs and fetch attribution for whatever draws your
 map:
 
 ```typescript
-import { SessionPool } from "@bamnet/google-map-tiles/core";
+import { SessionPool, tileAt, tileBounds } from "@bamnet/google-map-tiles/core";
 
 const pool = new SessionPool("YOUR_API_KEY");
 
@@ -161,14 +161,15 @@ const client = await pool.client({
   region: "us",
 });
 
-// A single tile, e.g. for an <img>
-const url = client.tileUrl(15, 6294, 13288);
+// The tile containing a point, e.g. for an <img>
+const { z, x, y } = tileAt({ lat: 40.7128, lng: -74.006 }, 15);
+const url = client.tileUrl(z, x, y);
 
 // Or a {z}/{x}/{y} template, for libraries that take one
 const template = client.tileUrlTemplate();
 
-// Attribution for what's on screen: zoom, then north, south, east, west
-const { copyright } = await client.getViewport(15, 40.8, 40.7, -73.9, -74.0);
+// Attribution for what's shown: here, the area that tile covers
+const { copyright } = await client.getViewport(z, tileBounds(z, x, y));
 ```
 
 Call `pool.client()` whenever you need tiles rather than keeping the client,
