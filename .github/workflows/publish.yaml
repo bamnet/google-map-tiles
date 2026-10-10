@@ -6,6 +6,9 @@ on:
       - main
     paths-ignore:
       - "examples/**"
+  # Allows publishing manually from the Actions tab, e.g. to retry a failed
+  # publish. JSR requires the person running it to be a @bamnet scope member.
+  workflow_dispatch:
 
 jobs:
   publish:
