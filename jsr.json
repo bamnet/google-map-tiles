@@ -19,7 +19,9 @@
       "tsconfig*.json",
       "bunfig.toml",
       "scripts",
-      "src/test_helpers.ts"
+      "e2e",
+      "src/test_helpers.ts",
+      "playwright.config.ts"
     ]
   }
 }

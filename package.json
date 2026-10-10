@@ -11,7 +11,8 @@
   ],
   "scripts": {
     "test": "bun test",
-    "check": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "test:e2e": "playwright test",
+    "check": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p e2e/tsconfig.json",
     "lint": "biome lint .",
     "fmt": "biome format --write .",
     "examples:dev": "bun run --cwd examples dev",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
+    "@playwright/test": "^1.63.0",
     "@types/bun": "^1.4.2",
     "maplibre-gl": "^6.4.1",
     "typescript": "^7.0.2"
