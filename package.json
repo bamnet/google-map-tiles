@@ -26,7 +26,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
     "@playwright/test": "^1.63.0",
-    "@types/bun": "^1.4.2",
+    "@types/bun": "^1.4.3",
     "maplibre-gl": "^6.4.1",
     "typescript": "^7.0.2"
   }
