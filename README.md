@@ -43,11 +43,11 @@ yarn add jsr:@bamnet/google-map-tiles
 
 The library supports three ways of using Google Map Tiles:
 
-| You're using | Import | What you get |
-|---|---|---|
-| MapLibre GL JS | `@bamnet/google-map-tiles` | Tiles, attribution and logo, handled for you |
-| A MapLibre style, but not MapLibre GL JS (MapLibre Native, Flutter, or a server that builds styles) | `@bamnet/google-map-tiles/core` | A ready-made MapLibre source or style |
-| No MapLibre (your own `<img>` grid, canvas, Leaflet, OpenLayers, ...) | `@bamnet/google-map-tiles/core` | Sessions, tile URLs and attribution text |
+| You're using                                                                                        | Import                          | What you get                                 |
+| --------------------------------------------------------------------------------------------------- | ------------------------------- | -------------------------------------------- |
+| MapLibre GL JS                                                                                      | `@bamnet/google-map-tiles`      | Tiles, attribution and logo, handled for you |
+| A MapLibre style, but not MapLibre GL JS (MapLibre Native, Flutter, or a server that builds styles) | `@bamnet/google-map-tiles/core` | A ready-made MapLibre source or style        |
+| No MapLibre (your own `<img>` grid, canvas, Leaflet, OpenLayers, ...)                               | `@bamnet/google-map-tiles/core` | Sessions, tile URLs and attribution text     |
 
 The package has no dependencies. `@bamnet/google-map-tiles/core` runs anywhere
 `fetch` is available: browsers, Node, Bun, Deno and edge runtimes. The main
@@ -99,7 +99,11 @@ for tiles:
 
 ```typescript
 try {
-  await google.validate({ mapType: "roadmap", language: "en-US", region: "us" });
+  await google.validate({
+    mapType: "roadmap",
+    language: "en-US",
+    region: "us",
+  });
 } catch (error) {
   // e.g. "Error creating session: 400 API key not valid. Please pass a valid API key."
 }
@@ -136,7 +140,6 @@ map.addLayer({ id: "google", type: "raster", source: "google" });
 ```
 
 In this mode, your app is responsible for:
-
 - **Refreshing:** tile URLs stop working at `expiresAt` (currently about two
   weeks after creation). Create a new style or source before then.
 - **Attribution:** see the Attribution section below. Pass the current
@@ -184,7 +187,6 @@ current.
 
 Google's [Map Tiles policies](https://developers.google.com/maps/documentation/tile/policies)
 require two things wherever tiles are shown:
-
 - **The Google Maps logo**, or the text "Google Maps" where space is limited.
 - **The data attribution text** for the visible area: the `copyright` returned
   by `getViewport()`, shown in full as provided, usually in the bottom right.
@@ -195,18 +197,17 @@ require two things wherever tiles are shown:
 style). With `/core`, your app is responsible for implementing this.
 
 The logo itself is included, since Google doesn't host it at a stable URL:
-
 - **In code:** `GOOGLE_MAPS_LOGO` from `@bamnet/google-map-tiles/core` has
   every variant as SVG markup and a `data:` URI, plus the required display
   height (16–19px), clear space and accessible label. Google calls for the
   outlined logo over the map, and the non-outlined one on a plain background:
 
-  | Where the logo sits | Variant |
-  |---|---|
-  | Over a light map, e.g. roadmap | `light` (outlined) |
-  | Over a dark map, e.g. satellite | `dark` (outlined) |
-  | On a plain light background | `gray` or `darkGray` |
-  | On a plain dark background | `white` |
+  | Where the logo sits             | Variant              |
+  | ------------------------------- | -------------------- |
+  | Over a light map, e.g. roadmap  | `light` (outlined)   |
+  | Over a dark map, e.g. satellite | `dark` (outlined)    |
+  | On a plain light background     | `gray` or `darkGray` |
+  | On a plain dark background      | `white`              |
 
   ```typescript
   import { GOOGLE_MAPS_LOGO } from "@bamnet/google-map-tiles/core";
@@ -259,7 +260,6 @@ change the API host.
 
 Check out the `examples` directory for a complete demo application showing how
 to:
-
 - 🗺️ Use Google tiles as a style source, with `GoogleMapTilesProtocol`
 - 🔄 Switch between map types with `setStyle()`
 - 🌐 Configure language and region settings
